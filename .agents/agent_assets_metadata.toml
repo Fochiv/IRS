@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "-WcGiHfDuQ4OtEoIQGnmd"
+uri = "file://database/irs_database.txt"
+type = "text"
+title = "IRS - Base de données SQL (ouvrir avec Notepad, importer dans phpMyAdmin)"

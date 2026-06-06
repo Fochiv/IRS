@@ -1,0 +1,21 @@
+Options -Indexes
+DirectoryIndex index.php
+
+# Security headers
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options nosniff
+    Header always set X-Frame-Options SAMEORIGIN
+    Header always set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# Protect sensitive files
+<FilesMatch "\.(sql|log|env|ini|conf)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Protect directories
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
