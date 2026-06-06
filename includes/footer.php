@@ -1,4 +1,14 @@
-<?php $lang = getLang(); $theme = getTheme(); ?>
+<?php
+$lang = getLang(); $theme = getTheme();
+// Lire l'email de contact depuis la DB (avec fallback)
+function getSettingFooter($conn, $key, $default = '') {
+    $key = $conn->real_escape_string($key);
+    $r = $conn->query("SELECT setting_value FROM settings WHERE setting_key = '$key' LIMIT 1");
+    if ($r && $r->num_rows > 0) return $r->fetch_assoc()['setting_value'];
+    return $default;
+}
+$contact_email = getSettingFooter($conn, 'site_email', 'internationalregistrationserve@gmail.com');
+?>
 
 <footer class="irs-footer">
     <div class="container">
@@ -25,21 +35,21 @@
             <div class="col-lg-3 col-md-6">
                 <h6 class="footer-heading">Services</h6>
                 <ul class="footer-links">
-                    <li><a href="/index.php#verify-section"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i>Vérifier un document</a></li>
-                    <li><a href="/register.php"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i>Soumettre un document</a></li>
+                    <li><a href="/index.php#verify-section"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><?= $lang === 'fr' ? 'Vérifier un document' : 'Verify a document' ?></a></li>
+                    <li><a href="/register.php"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><?= $lang === 'fr' ? 'Soumettre un document' : 'Submit a document' ?></a></li>
                     <li><a href="/login.php"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><?= t('login') ?></a></li>
                     <li><a href="/register.php"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><?= t('register') ?></a></li>
                 </ul>
             </div>
             <div class="col-lg-3 col-md-6">
-                <h6 class="footer-heading">Légal</h6>
+                <h6 class="footer-heading"><?= $lang === 'fr' ? 'Légal' : 'Legal' ?></h6>
                 <ul class="footer-links">
                     <li><a href="/privacy.php"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><?= t('privacy') ?></a></li>
                     <li><a href="/terms.php"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><?= t('terms') ?></a></li>
                 </ul>
                 <div class="mt-3">
                     <div style="color:rgba(255,255,255,0.6);font-size:0.8rem;margin-bottom:0.5rem;">
-                        <i class="bi bi-envelope me-1"></i> contact@irs-server.com
+                        <i class="bi bi-envelope me-1"></i> <?= htmlspecialchars($contact_email) ?>
                     </div>
                     <div style="color:rgba(255,255,255,0.6);font-size:0.8rem;">
                         <i class="bi bi-globe me-1"></i> www.irs-server.com
@@ -64,6 +74,11 @@
     </div>
 </footer>
 
+<!-- Bouton retour en haut -->
+<button id="backToTop" title="Retour en haut">
+    <i class="bi bi-arrow-up"></i>
+</button>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 window.IRS_LANG = {
@@ -81,6 +96,13 @@ window.IRS_LANG = {
     ai_verification: '<?= addslashes(t("ai_verification")) ?>',
     expert_verification: '<?= addslashes(t("expert_verification")) ?>',
     final_validation: '<?= addslashes(t("final_validation")) ?>',
+    download_certificate: '<?= $lang === "fr" ? "Télécharger le certificat officiel" : "Download official certificate" ?>',
+    holder_name: '<?= addslashes(t("holder_name")) ?>',
+    doc_type: '<?= addslashes(t("doc_type")) ?>',
+    issuing_org: '<?= addslashes(t("issuing_org")) ?>',
+    issue_date: '<?= addslashes(t("issue_date")) ?>',
+    country_origin: '<?= addslashes(t("country_origin")) ?>',
+    verify_date: '<?= addslashes(t("verify_date")) ?>',
 };
 </script>
 <script src="/assets/js/main.js"></script>

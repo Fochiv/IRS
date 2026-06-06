@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const savedTheme = getCookie('theme') || 'light';
     applyTheme(savedTheme);
 
-    document.querySelectorAll('.theme-toggle').forEach(btn => {
+    document.querySelectorAll('.theme-toggle, .nav-theme-toggle').forEach(btn => {
         btn.addEventListener('click', function () {
             const current = document.documentElement.getAttribute('data-theme') || 'light';
             const next = current === 'light' ? 'dark' : 'light';
@@ -17,20 +17,41 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function applyTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
-        document.querySelectorAll('.theme-toggle').forEach(btn => {
+        document.querySelectorAll('.theme-toggle, .nav-theme-toggle').forEach(btn => {
             const icon = btn.querySelector('i');
             const label = btn.querySelector('.theme-label');
             if (icon) icon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
-            if (label) label.textContent = theme === 'dark' ? 'Clair' : 'Sombre';
+            if (label) {
+                const darkLabel = (typeof window.IRS_LANG !== 'undefined' && window.IRS_LANG.theme_light) ? window.IRS_LANG.theme_light : 'Clair';
+                const lightLabel = (typeof window.IRS_LANG !== 'undefined' && window.IRS_LANG.theme_dark) ? window.IRS_LANG.theme_dark : 'Sombre';
+                label.textContent = theme === 'dark' ? darkLabel : lightLabel;
+            }
         });
     }
 
-    // ===== LANGUAGE =====
-    document.querySelectorAll('.lang-selector').forEach(sel => {
+    // ===== LANGUAGE (AJAX - sans rechargement de page complète) =====
+    document.querySelectorAll('.lang-selector, .nav-lang-selector').forEach(sel => {
         sel.addEventListener('change', function () {
-            window.location.href = '/set-lang.php?lang=' + this.value + '&redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+            const lang = this.value;
+            // Met à jour la session via AJAX puis recharge la page
+            fetch('/set-lang.php?lang=' + encodeURIComponent(lang), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(() => window.location.reload())
+            .catch(() => window.location.reload());
         });
     });
+
+    // ===== BACK TO TOP =====
+    const backToTopBtn = document.getElementById('backToTop');
+    if (backToTopBtn) {
+        window.addEventListener('scroll', function () {
+            backToTopBtn.classList.toggle('show', window.scrollY > 300);
+        }, { passive: true });
+        backToTopBtn.addEventListener('click', function () {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
 
     // ===== SIDEBAR TOGGLE (mobile) =====
     const sidebarToggle = document.getElementById('sidebarToggle');
@@ -104,15 +125,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function buildTimeline() {
+        const L = window.IRS_LANG;
         const steps = [
-            { icon: 'bi-file-earmark-check', name: window.IRS_LANG.doc_received },
-            { icon: 'bi-file-text', name: window.IRS_LANG.analyzing_structure },
-            { icon: 'bi-database-check', name: window.IRS_LANG.analyzing_data },
-            { icon: 'bi-eye', name: window.IRS_LANG.ocr_analysis },
-            { icon: 'bi-shield-check', name: window.IRS_LANG.security_analysis },
-            { icon: 'bi-cpu', name: window.IRS_LANG.ai_verification },
-            { icon: 'bi-person-check', name: window.IRS_LANG.expert_verification },
-            { icon: 'bi-patch-check', name: window.IRS_LANG.final_validation },
+            { icon: 'bi-file-earmark-check', name: L.doc_received },
+            { icon: 'bi-file-text', name: L.analyzing_structure },
+            { icon: 'bi-database-check', name: L.analyzing_data },
+            { icon: 'bi-eye', name: L.ocr_analysis },
+            { icon: 'bi-shield-check', name: L.security_analysis },
+            { icon: 'bi-cpu', name: L.ai_verification },
+            { icon: 'bi-person-check', name: L.expert_verification },
+            { icon: 'bi-patch-check', name: L.final_validation },
         ];
 
         let html = `<div class="verify-timeline fade-in-up">
@@ -195,9 +217,11 @@ document.addEventListener('DOMContentLoaded', function () {
     function displayResult(data) {
         const resultContainer = document.getElementById('verifyResult');
         if (!resultContainer) return;
+        const L = window.IRS_LANG;
 
         if (data.found) {
             const doc = data.document;
+            const certUrl = '/api/download-certificate.php?doc=' + encodeURIComponent(doc.document_number);
             resultContainer.innerHTML = `
                 <div class="verify-result-container fade-in-up">
                     <div class="text-center mb-3">
@@ -205,8 +229,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         <div class="verified-stamp mx-auto d-inline-flex">
                             <i class="bi bi-patch-check-fill"></i>
                             <div>
-                                <div>${window.IRS_LANG.verified_badge}</div>
-                                <div style="font-size:0.7rem;font-weight:400;letter-spacing:1px;">${window.IRS_LANG.doc_authenticated}</div>
+                                <div>${L.verified_badge}</div>
+                                <div style="font-size:0.7rem;font-weight:400;letter-spacing:1px;">${L.doc_authenticated}</div>
                             </div>
                         </div>
                     </div>
@@ -217,44 +241,47 @@ document.addEventListener('DOMContentLoaded', function () {
                         </div>
                         <div class="info-body">
                             <div class="info-row">
-                                <span class="info-label"><i class="bi bi-hash"></i> Numéro</span>
+                                <span class="info-label"><i class="bi bi-hash"></i> ${L.document_number || 'Numéro'}</span>
                                 <span class="info-value fw-bold">${escHtml(doc.document_number)}</span>
                             </div>
                             <div class="info-row">
-                                <span class="info-label"><i class="bi bi-person"></i> Titulaire</span>
+                                <span class="info-label"><i class="bi bi-person"></i> ${L.holder_name}</span>
                                 <span class="info-value">${escHtml(doc.holder_name)}</span>
                             </div>
                             <div class="info-row">
-                                <span class="info-label"><i class="bi bi-file-earmark"></i> Type</span>
+                                <span class="info-label"><i class="bi bi-file-earmark"></i> ${L.doc_type}</span>
                                 <span class="info-value">${escHtml(doc.document_type)}</span>
                             </div>
                             <div class="info-row">
-                                <span class="info-label"><i class="bi bi-building"></i> Organisme</span>
+                                <span class="info-label"><i class="bi bi-building"></i> ${L.issuing_org}</span>
                                 <span class="info-value">${escHtml(doc.issuing_organization)}</span>
                             </div>
                             <div class="info-row">
-                                <span class="info-label"><i class="bi bi-calendar3"></i> Date d'émission</span>
+                                <span class="info-label"><i class="bi bi-calendar3"></i> ${L.issue_date}</span>
                                 <span class="info-value">${escHtml(doc.issue_date)}</span>
                             </div>
                             <div class="info-row">
-                                <span class="info-label"><i class="bi bi-geo-alt"></i> Pays</span>
+                                <span class="info-label"><i class="bi bi-geo-alt"></i> ${L.country_origin}</span>
                                 <span class="info-value">${escHtml(doc.country_of_origin)}</span>
                             </div>
                             <div class="info-row">
-                                <span class="info-label"><i class="bi bi-check-circle"></i> Statut</span>
+                                <span class="info-label"><i class="bi bi-check-circle"></i> ${L.status || 'Statut'}</span>
                                 <span class="info-value"><span class="badge bg-success"><i class="bi bi-patch-check-fill me-1"></i>Vérifié</span></span>
                             </div>
                             <div class="info-row">
-                                <span class="info-label"><i class="bi bi-clock-history"></i> Vérifié le</span>
+                                <span class="info-label"><i class="bi bi-clock-history"></i> ${L.verify_date}</span>
                                 <span class="info-value">${new Date().toLocaleDateString('fr-FR')}</span>
                             </div>
                         </div>
                     </div>
-                    ${doc.file_path ? `<div class="mt-3 text-center">
-                        <a href="/${escHtml(doc.file_path)}" class="btn btn-success" target="_blank">
-                            <i class="bi bi-download me-2"></i>${window.IRS_LANG.download_doc}
+                    <div class="mt-3 text-center d-flex gap-2 justify-content-center flex-wrap">
+                        <a href="${certUrl}" target="_blank" class="btn btn-success">
+                            <i class="bi bi-file-earmark-check me-2"></i>${L.download_certificate || 'Télécharger le certificat'}
                         </a>
-                    </div>` : ''}
+                        ${doc.file_path ? `<a href="/${escHtml(doc.file_path)}" class="btn btn-outline-primary" target="_blank">
+                            <i class="bi bi-download me-2"></i>${L.download_doc}
+                        </a>` : ''}
+                    </div>
                 </div>`;
         } else {
             resultContainer.innerHTML = `
@@ -264,17 +291,17 @@ document.addEventListener('DOMContentLoaded', function () {
                         <div class="not-verified-stamp mx-auto d-inline-flex">
                             <i class="bi bi-x-circle-fill"></i>
                             <div>
-                                <div>${window.IRS_LANG.not_verified_badge}</div>
+                                <div>${L.not_verified_badge}</div>
                             </div>
                         </div>
                     </div>
                     <div class="alert alert-danger text-center" style="border-radius:12px;">
                         <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                        ${window.IRS_LANG.doc_not_found}
+                        ${L.doc_not_found}
                     </div>
                     <div class="text-center mt-3">
                         <a href="/register.php" class="btn btn-danger me-2">
-                            <i class="bi bi-upload me-2"></i>${window.IRS_LANG.submit_for_analysis}
+                            <i class="bi bi-upload me-2"></i>${L.submit_for_analysis}
                         </a>
                     </div>
                 </div>`;
@@ -331,6 +358,7 @@ window.IRS_LANG = window.IRS_LANG || {
     doc_not_found: 'This document does not exist in our registry.',
     submit_for_analysis: 'Submit for Analysis',
     download_doc: 'Download official document',
+    download_certificate: 'Download official certificate',
     doc_received: 'Document received',
     analyzing_structure: 'Structure analysis',
     analyzing_data: 'Data analysis',
@@ -339,4 +367,10 @@ window.IRS_LANG = window.IRS_LANG || {
     ai_verification: 'AI Verification',
     expert_verification: 'Expert verification',
     final_validation: 'Final validation',
+    holder_name: 'Holder name',
+    doc_type: 'Document type',
+    issuing_org: 'Issuing organization',
+    issue_date: 'Issue date',
+    country_origin: 'Country of origin',
+    verify_date: 'Verification date',
 };

@@ -45,6 +45,12 @@
             <i class="bi bi-search"></i>Recherche avancée
         </a>
 
+        <div class="sidebar-section-title">Compte</div>
+
+        <a href="/admin/settings.php" class="sidebar-link <?= $current === 'settings.php' ? 'active' : '' ?>" style="<?= $current === 'settings.php' ? 'border-left-color:#ffa500;background:rgba(255,165,0,0.1);' : '' ?>">
+            <i class="bi bi-gear"></i>Paramètres admin
+        </a>
+
         <div class="sidebar-section-title">Navigation</div>
         <a href="/index.php" class="sidebar-link" target="_blank">
             <i class="bi bi-globe"></i>Voir le site

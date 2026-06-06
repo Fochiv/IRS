@@ -55,7 +55,20 @@ $notif_count = ($user) ? getUserNotificationsCount($conn, $_SESSION['user_id']) 
                     </a>
                 </li>
             </ul>
-            <ul class="navbar-nav ms-auto align-items-center gap-2">
+            <ul class="navbar-nav ms-auto align-items-center gap-1">
+                <!-- Sélecteur de langue -->
+                <li class="nav-item">
+                    <select class="lang-selector nav-lang-selector" aria-label="Langue" title="<?= t('language') ?>">
+                        <option value="fr" <?= $lang === 'fr' ? 'selected' : '' ?>>🇫🇷 FR</option>
+                        <option value="en" <?= $lang === 'en' ? 'selected' : '' ?>>🇬🇧 EN</option>
+                    </select>
+                </li>
+                <!-- Toggle thème -->
+                <li class="nav-item">
+                    <button class="theme-toggle nav-theme-toggle" title="<?= t('theme') ?>">
+                        <i class="bi <?= $theme === 'dark' ? 'bi-sun-fill' : 'bi-moon-fill' ?>"></i>
+                    </button>
+                </li>
                 <?php if ($user): ?>
                     <?php if ($notif_count > 0): ?>
                     <li class="nav-item">

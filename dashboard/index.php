@@ -32,16 +32,20 @@ $lang = getLang(); $theme = getTheme();
                 </button>
                 <div>
                     <h1 class="page-title"><?= t('dashboard') ?></h1>
-                    <p class="page-subtitle">Bienvenue, <?= htmlspecialchars($user['first_name']) ?> !</p>
+                    <p class="page-subtitle"><?= $lang === 'fr' ? 'Bienvenue' : 'Welcome' ?>, <?= htmlspecialchars($user['first_name']) ?> !</p>
                 </div>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <button class="theme-toggle" title="Thème">
-                    <i class="bi bi-moon-fill"></i>
-                    <span class="theme-label">Sombre</span>
+                <select class="lang-selector topbar-control" style="padding:0.3rem 0.6rem;font-size:0.82rem;border-radius:6px;">
+                    <option value="fr" <?= $lang === 'fr' ? 'selected' : '' ?>>🇫🇷 FR</option>
+                    <option value="en" <?= $lang === 'en' ? 'selected' : '' ?>>🇬🇧 EN</option>
+                </select>
+                <button class="theme-toggle topbar-control" title="<?= t('theme') ?>">
+                    <i class="bi <?= $theme === 'dark' ? 'bi-sun-fill' : 'bi-moon-fill' ?>"></i>
+                    <span class="theme-label"><?= $theme === 'dark' ? 'Clair' : 'Sombre' ?></span>
                 </button>
                 <a href="/dashboard/submit.php" class="btn btn-sm" style="background:var(--irs-blue);color:white;border-radius:8px;">
-                    <i class="bi bi-upload me-1"></i>Soumettre un document
+                    <i class="bi bi-upload me-1"></i><?= t('submit_doc') ?>
                 </a>
             </div>
         </div>
@@ -89,21 +93,21 @@ $lang = getLang(); $theme = getTheme();
         <!-- RECENT DOCUMENTS -->
         <div class="irs-card">
             <div class="irs-card-header">
-                <h5 class="irs-card-title"><i class="bi bi-clock-history text-irs-blue"></i>Documents récents</h5>
+                <h5 class="irs-card-title"><i class="bi bi-clock-history text-irs-blue"></i><?= $lang === 'fr' ? 'Documents récents' : 'Recent Documents' ?></h5>
                 <a href="/dashboard/documents.php" style="font-size:0.85rem;color:var(--irs-blue);text-decoration:none;">
                     <?= t('view_all') ?> <i class="bi bi-arrow-right"></i>
                 </a>
             </div>
-            <div style="overflow-x:auto;">
+            <div class="table-wrap">
                 <?php if ($recent && $recent->num_rows > 0): ?>
                 <table class="irs-table w-100">
                     <thead>
                         <tr>
-                            <th>Document</th>
-                            <th>Numéro</th>
-                            <th>Type</th>
-                            <th>Soumis le</th>
-                            <th>Statut</th>
+                            <th><?= t('doc_name') ?></th>
+                            <th><?= t('doc_number') ?></th>
+                            <th><?= t('doc_type') ?></th>
+                            <th><?= t('date') ?></th>
+                            <th><?= t('status') ?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -121,9 +125,9 @@ $lang = getLang(); $theme = getTheme();
                 <?php else: ?>
                 <div class="empty-state">
                     <i class="bi bi-folder-x"></i>
-                    <p>Aucun document soumis pour l'instant.</p>
+                    <p><?= $lang === 'fr' ? 'Aucun document soumis pour l\'instant.' : 'No documents submitted yet.' ?></p>
                     <a href="/dashboard/submit.php" class="btn btn-sm" style="background:var(--irs-blue);color:white;border-radius:8px;margin-top:0.75rem;">
-                        <i class="bi bi-upload me-1"></i>Soumettre mon premier document
+                        <i class="bi bi-upload me-1"></i><?= t('submit_doc') ?>
                     </a>
                 </div>
                 <?php endif; ?>
@@ -133,7 +137,7 @@ $lang = getLang(); $theme = getTheme();
         <!-- QUICK VERIFY -->
         <div class="irs-card">
             <div class="irs-card-header">
-                <h5 class="irs-card-title"><i class="bi bi-search text-irs-blue"></i>Vérification rapide</h5>
+                <h5 class="irs-card-title"><i class="bi bi-search text-irs-blue"></i><?= $lang === 'fr' ? 'Vérification rapide' : 'Quick Verification' ?></h5>
             </div>
             <div class="irs-card-body">
                 <form id="verifyForm">
@@ -150,6 +154,11 @@ $lang = getLang(); $theme = getTheme();
     </div>
 </div>
 
+<!-- Bouton retour en haut -->
+<button id="backToTop" title="<?= $lang === 'fr' ? 'Retour en haut' : 'Back to top' ?>">
+    <i class="bi bi-arrow-up"></i>
+</button>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 window.IRS_LANG = {
@@ -159,6 +168,7 @@ window.IRS_LANG = {
     doc_not_found: '<?= addslashes(t("doc_not_found")) ?>',
     submit_for_analysis: '<?= addslashes(t("submit_for_analysis")) ?>',
     download_doc: '<?= addslashes(t("download_doc")) ?>',
+    download_certificate: '<?= $lang === "fr" ? "Télécharger le certificat officiel" : "Download official certificate" ?>',
     doc_received: '<?= addslashes(t("doc_received")) ?>',
     analyzing_structure: '<?= addslashes(t("analyzing_structure")) ?>',
     analyzing_data: '<?= addslashes(t("analyzing_data")) ?>',
@@ -167,9 +177,16 @@ window.IRS_LANG = {
     ai_verification: '<?= addslashes(t("ai_verification")) ?>',
     expert_verification: '<?= addslashes(t("expert_verification")) ?>',
     final_validation: '<?= addslashes(t("final_validation")) ?>',
+    holder_name: '<?= addslashes(t("holder_name")) ?>',
+    doc_type: '<?= addslashes(t("doc_type")) ?>',
+    issuing_org: '<?= addslashes(t("issuing_org")) ?>',
+    issue_date: '<?= addslashes(t("issue_date")) ?>',
+    country_origin: '<?= addslashes(t("country_origin")) ?>',
+    verify_date: '<?= addslashes(t("verify_date")) ?>',
+    status: '<?= addslashes(t("status")) ?>',
+    theme_light: '<?= $lang === "fr" ? "Clair" : "Light" ?>',
+    theme_dark: '<?= $lang === "fr" ? "Sombre" : "Dark" ?>',
 };
-const th = document.cookie.match('(^|;)\\s*theme\\s*=\\s*([^;]+)');
-document.documentElement.setAttribute('data-theme', th ? th[2] : 'light');
 </script>
 <script src="/assets/js/main.js"></script>
 </body>

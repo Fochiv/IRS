@@ -56,7 +56,7 @@ fi
 
 echo ""
 echo "=== Serveur PHP démarré sur le port 5000 ==="
-echo "Admin : admin@irs-server.com / Admin@2024"
+echo "Admin : aldofoch@gmail.com / 1214161820@Ben"
 echo "User  : jean.dupont@email.com / User@1234"
 echo ""
 
