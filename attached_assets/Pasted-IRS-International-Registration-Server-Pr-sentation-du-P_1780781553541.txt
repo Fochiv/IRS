@@ -1,0 +1,395 @@
+IRS - International Registration Server
+Présentation du Projet
+Développer une plateforme web professionnelle nommée IRS (International Registration Server) permettant la vérification et la certification de documents à l'échelle internationale.
+L'objectif principal est de permettre à n'importe quel visiteur de vérifier gratuitement l'authenticité d'un document à partir de son numéro unique.
+Si le document existe dans la base de données officielle du système IRS, il est affiché comme "Document Vérifié".
+Si le document n'existe pas, l'utilisateur peut demander une analyse approfondie par Intelligence Artificielle et par une équipe d'experts humains.
+________________________________________
+Technologies
+Développer le projet avec :
+•	HTML5
+•	CSS3
+•	Bootstrap 5
+•	JavaScript
+•	AJAX
+•	PHP 8+
+•	MySQL
+•	PHPMailer (notifications email)
+•	API Google Translate ou système de traduction interne
+•	Architecture MVC recommandée
+Le projet doit être :
+•	Responsive Mobile / Tablette / Desktop
+•	Moderne
+•	Professionnel
+•	Rapide
+•	Sécurisé
+•	SEO Friendly
+________________________________________
+Identité Visuelle
+Nom :
+IRS
+International Registration Server
+Couleurs :
+•	Bleu foncé (#0A2342)
+•	Bleu clair (#2E86DE)
+•	Blanc (#FFFFFF)
+•	Vert validation (#28A745)
+•	Rouge rejet (#DC3545)
+•	Gris clair (#F5F7FA)
+Style :
+•	Institutionnel
+•	Gouvernemental
+•	Professionnel
+•	International
+•	Inspirant confiance
+________________________________________
+Page d'Accueil (Accueil Public)
+La page d'accueil doit être moderne, professionnelle et rassurante.
+Elle doit être accessible sans connexion.
+L'objectif principal est de permettre à un visiteur de :
+•	Comprendre le rôle de IRS
+•	Vérifier rapidement un document
+•	Comprendre le processus de vérification
+•	Découvrir les garanties de sécurité du système
+________________________________________
+Hero Section
+Grand bandeau principal.
+Titre :
+International Registration Server (IRS)
+Sous-titre :
+La plateforme internationale de vérification et de certification documentaire.
+Texte :
+"Vérifiez instantanément l'authenticité d'un document enregistré dans notre registre sécurisé international."
+Champ de recherche :
+•	Numéro du document
+Bouton :
+Vérifier maintenant
+Aucune inscription requise pour effectuer une vérification.
+Illustration moderne représentant :
+•	Sécurité numérique
+•	Vérification documentaire
+•	Intelligence artificielle
+•	Protection des données
+________________________________________
+Section : À Propos de IRS
+Titre :
+À Propos de IRS
+Texte :
+"International Registration Server (IRS) est une plateforme spécialisée dans la vérification, la validation et la certification de documents officiels.
+Notre mission est de permettre aux particuliers, entreprises, établissements d'enseignement, organisations et institutions publiques de vérifier rapidement l'authenticité de documents enregistrés dans notre registre sécurisé.
+Grâce à une combinaison d'intelligence artificielle avancée, d'analyses automatisées et de contrôles réalisés par des experts qualifiés, IRS contribue à lutter contre la fraude documentaire et à renforcer la confiance numérique à l'échelle internationale."
+________________________________________
+Section : Comment fonctionne la vérification ?
+Titre :
+Notre Processus de Vérification (Ajouter des icones à chaque étape au lieu des emojis)
+Présenter le processus sous forme de timeline ou de cartes animées.
+Étape 1
+Soumission du numéro du document.
+Description :
+"L'utilisateur saisit simplement le numéro unique du document à vérifier."
+________________________________________
+Étape 2
+Recherche dans le registre sécurisé IRS.
+Description :
+"Notre système recherche instantanément le document dans la base de données officielle."
+________________________________________
+Étape 3
+Validation de l'authenticité.
+Description :
+"Si le document est enregistré, ses informations officielles sont affichées immédiatement."
+________________________________________
+Étape 4
+Analyse approfondie.
+Description :
+"Si le document n'est pas trouvé, l'utilisateur peut demander une vérification avancée réalisée par notre IA et nos experts."
+________________________________________
+Étape 5
+Notification des résultats.
+Description :
+"Le résultat final est communiqué directement sur la plateforme et par email."
+________________________________________
+Section : Pourquoi faire confiance à IRS ?
+Afficher plusieurs cartes avec icônes.
+Vérification Sécurisée
+Protection avancée des données et des documents.
+Intelligence Artificielle
+Analyse automatisée des incohérences et anomalies.
+Experts Qualifiés
+Contrôle humain pour les cas complexes.
+Notifications en Temps Réel
+Suivi complet de l'évolution des vérifications.
+Registre International
+Base documentaire centralisée et sécurisée.
+Certification Numérique
+Documents validés accompagnés d'un certificat officiel.
+________________________________________
+Section : Statistiques
+Afficher des compteurs animés.
+Exemples :
+•	Documents enregistrés
+•	Vérifications effectuées
+•	Taux de réussite
+•	Pays couverts
+•	Institutions partenaires
+Les statistiques fictives
+________________________________________
+Section : Questions Fréquentes (FAQ)
+Une vérification nécessite-t-elle un compte ?
+Non. Toute personne peut vérifier un document sans créer de compte.
+Quand dois-je créer un compte ?
+Uniquement si vous souhaitez soumettre un document non vérifié pour une analyse approfondie.
+Combien de temps dure une vérification approfondie ?
+Selon la complexité du dossier, le délai peut varier de quelques heures à plusieurs jours.
+Vais-je recevoir une notification ?
+Oui. Les notifications sont disponibles dans votre espace personnel et envoyées par email.
+Mes données sont-elles protégées ?
+Oui. Toutes les données sont traitées conformément aux standards modernes de sécurité.
+________________________________________
+Section : Appel à l'Action
+Grand bloc final.
+Titre :
+Vérifiez un document dès maintenant
+Texte :
+"Accédez à notre registre sécurisé et obtenez instantanément le statut d'un document."
+Bouton principal :
+Commencer une vérification
+Bouton secondaire :
+Soumettre un document
+________________________________________
+Footer
+Inclure :
+•	À propos
+•	Vérifier un document
+•	Soumettre un document
+•	FAQ
+•	Politique de confidentialité
+•	Conditions d'utilisation
+•	Contact
+Afficher :
+© IRS - International Registration Server - Tous droits réservés.
+Le footer doit également contenir un sélecteur de langue (Français / English) ainsi que le bouton de changement de thème Clair / Sombre.
+On doit aussi avoir un Menu complet responsif. 
+________________________________________
+Fonctionnement Principal
+Vérification Rapide
+Sur la page d'accueil :
+Champ :
+"Entrez le numéro du document"
+Bouton :
+"Vérifier"
+Aucune connexion requise.
+________________________________________
+Cas 1 : Document Vérifié
+Si le document existe dans la base :
+Afficher :
+Grand cachet vert :
+✓VERIFIED
+Document Authenticated
+Informations :
+•	Numéro du document
+•	Nom du titulaire
+•	Type du document
+•	Date d'émission
+•	Date de vérification
+•	Statut : Vérifié
+•	Organisme émetteur
+Afficher également :
+•	Aperçu miniature du document
+•	Bouton Télécharger le document officiel
+Animation de validation.
+________________________________________
+Parcours de Vérification (A noter que ces étapes sont fictives rien de réel)
+Après soumission :
+Afficher une timeline professionnelle.
+Étape 1
+✓ Document reçu
+Étape 2
+✓ Analyse de structure documentaire
+Étape 3
+✓ Analyse de cohérence des données
+Étape 4
+✓ Analyse OCR
+Étape 5
+✓ Analyse de sécurité
+Étape 6
+✓ Vérification IA
+Étape 7
+✓ Vérification par experts humains
+Étape 8
+✓ Validation finale
+Chaque étape possède :
+•	icône
+•	pourcentage
+•	animation
+•	progression
+Le système doit volontairement afficher une progression réaliste afin que l'utilisateur comprenne que l'analyse est sérieuse.
+________________________________________
+Cas 2 : Document Non Vérifié
+Afficher :
+Grand cachet rouge :
+✗ NOT VERIFIED
+Message :
+"Ce document n'existe pas dans notre registre international."
+Bouton :
+"Soumettre pour Analyse"
+Lors du clic :
+Redirection vers :
+Connexion ou Création de compte.
+________________________________________
+Système d'Authentification
+Création de compte :
+•	Nom
+•	Prénom
+•	Email
+•	Téléphone
+•	Pays
+•	Mot de passe
+Connexion :
+•	Email
+•	Mot de passe
+Mot de passe oublié
+________________________________________
+Soumission d'un Document
+Une fois connecté :
+Formulaire :
+•	Nom du document
+•	Numéro du document
+•	Type du document
+•	Organisme émetteur
+•	Pays d'origine
+•	Description
+•	Upload PDF 
+•	Upload Image
+Bouton :
+"Soumettre pour Vérification"
+________________________________________
+Dashboard Utilisateur
+Après connexion :
+Menu :
+•	Tableau de bord
+•	Mes Documents
+•	Documents Soumis
+•	Notifications
+•	Profil
+•	Paramètres
+•	Déconnexion
+Statistiques :
+•	Documents soumis
+•	Documents validés
+•	Documents refusés
+•	Documents en attente
+________________________________________
+Notifications
+Notifications temps réel :
+•	Dans le site
+•	Par email Gmail
+Exemples :
+Votre document a été reçu.
+Votre document est en cours d'analyse.
+Votre document a été validé.
+Votre document a été rejeté.
+________________________________________
+Validation d'un Document
+Si validé :
+Créer automatiquement un certificat IRS.
+Afficher :
+•	Cachet VERIFIED
+•	Référence unique
+•	Date de validation
+Téléchargement PDF.
+________________________________________
+Rejet d'un Document
+Si rejeté :
+Afficher :
+Statut : Rejeté
+Motif du rejet
+Exemples :
+•	Informations incohérentes
+•	Document falsifié
+•	Document incomplet
+•	Qualité insuffisante
+________________________________________
+Administration
+Compte Super Administrateur
+________________________________________
+Gestion Utilisateurs
+Fonctions (Avec barre de recherche) :
+•	Voir utilisateurs
+•	Ajouter utilisateur
+•	Modifier utilisateur
+•	Suspendre utilisateur
+•	Supprimer utilisateur
+________________________________________
+Gestion Documents
+Fonctions (Avec barre de recherche) :
+•	Ajouter document officiel
+•	Modifier document
+•	Supprimer document
+•	Télécharger document
+________________________________________
+Vérifications Soumises
+Voir (Avec barre de recherche) :
+•	Documents en attente
+•	Documents validés
+•	Documents refusés
+Actions :
+•	Valider
+•	Rejeter
+•	Demander informations complémentaires
+________________________________________
+Gestion Notifications
+Envoyer :
+•	Notification système
+•	Email
+•	Notification globale
+________________________________________
+Journal d'Activité
+Historique complet :
+•	Connexions
+•	Vérifications
+•	Modifications
+•	Actions administrateur
+________________________________________
+Recherche Avancée
+Filtres :
+•	Numéro
+•	Pays
+•	Type
+•	Date
+•	Statut
+________________________________________
+Sécurité
+Implémenter :
+•	Pas de hachage de mot de passe dans la base de données
+•	SQL Injection Protection
+•	Authentification sécurisée
+________________________________________
+Multilingue
+Langues :
+•	Français (par défaut)
+•	Anglais
+Changement instantané sans rechargement.
+Utiliser AJAX ou JavaScript.
+________________________________________
+Thème Clair / Sombre
+Ajouter :
+•	Toggle Light Mode
+•	Toggle Dark Mode
+Sauvegarde automatique des préférence et Changement instantané sans rechargement.
+________________________________________
+Livrables Attendus
+Générer :
+•	Structure complète du projet
+•	Base de données SQL
+•	Backend PHP
+•	Frontend Bootstrap
+•	Dashboard utilisateur
+•	Dashboard administrateur
+•	Gestion des notifications
+•	Gestion des emails
+•	Vérification documentaire
+•	Interface multilingue
+•	Mode sombre
+•	Code propre et commenté
+•	Architecture professionnelle prête pour la production
+
