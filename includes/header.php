@@ -25,59 +25,38 @@ $notif_count = ($user) ? getUserNotificationsCount($conn, $_SESSION['user_id']) 
 
 <nav class="irs-navbar navbar navbar-expand-lg">
     <div class="container">
+        <!-- Brand -->
         <a class="navbar-brand" href="/index.php">
             <img src="/logo.png" alt="IRS Logo">
-            <div class="brand-text">IRS <span class="brand-sub">International Registration Server</span></div>
+            <div class="brand-text">IRS <span class="brand-sub d-none d-md-inline">International Registration Server</span></div>
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+
+        <!-- Collapsible nav links -->
         <div class="collapse navbar-collapse" id="mainNav">
-            <ul class="navbar-nav me-auto ms-3">
+            <ul class="navbar-nav me-auto ms-2">
                 <li class="nav-item">
                     <a class="nav-link <?= $current_page === 'index.php' ? 'active' : '' ?>" href="/index.php">
-                        <i class="bi bi-house me-1"></i><?= t('home') ?>
+                        <i class="bi bi-house me-1"></i><span data-i18n="home"><?= t('home') ?></span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/index.php#verify-section">
-                        <i class="bi bi-search me-1"></i><?= t('verify') ?>
+                        <i class="bi bi-search me-1"></i><span data-i18n="verify"><?= t('verify') ?></span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/index.php#about-section">
-                        <i class="bi bi-info-circle me-1"></i><?= t('about') ?>
+                        <i class="bi bi-info-circle me-1"></i><span data-i18n="about"><?= t('about') ?></span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/index.php#faq-section">
-                        <i class="bi bi-question-circle me-1"></i><?= t('faq') ?>
+                        <i class="bi bi-question-circle me-1"></i><span data-i18n="faq"><?= t('faq') ?></span>
                     </a>
                 </li>
             </ul>
-            <ul class="navbar-nav ms-auto align-items-center gap-1">
-                <!-- Sélecteur de langue -->
-                <li class="nav-item">
-                    <select class="lang-selector nav-lang-selector" aria-label="Langue" title="<?= t('language') ?>">
-                        <option value="fr" <?= $lang === 'fr' ? 'selected' : '' ?>>🇫🇷 FR</option>
-                        <option value="en" <?= $lang === 'en' ? 'selected' : '' ?>>🇬🇧 EN</option>
-                    </select>
-                </li>
-                <!-- Toggle thème -->
-                <li class="nav-item">
-                    <button class="theme-toggle nav-theme-toggle" title="<?= t('theme') ?>">
-                        <i class="bi <?= $theme === 'dark' ? 'bi-sun-fill' : 'bi-moon-fill' ?>"></i>
-                    </button>
-                </li>
+            <ul class="navbar-nav align-items-center gap-1">
                 <?php if ($user): ?>
-                    <?php if ($notif_count > 0): ?>
-                    <li class="nav-item">
-                        <a class="nav-link position-relative" href="/dashboard/notifications.php">
-                            <i class="bi bi-bell-fill" style="color:white;font-size:1.1rem;"></i>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.6rem;"><?= $notif_count ?></span>
-                        </a>
-                    </li>
-                    <?php endif; ?>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
                             <i class="bi bi-person-circle me-1"></i>
@@ -85,33 +64,59 @@ $notif_count = ($user) ? getUserNotificationsCount($conn, $_SESSION['user_id']) 
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" style="background:var(--irs-card-bg);border-color:var(--irs-border);">
                             <li><a class="dropdown-item" href="/dashboard/index.php" style="color:var(--irs-text);">
-                                <i class="bi bi-speedometer2 me-2"></i><?= t('dashboard') ?>
+                                <i class="bi bi-speedometer2 me-2"></i><span data-i18n="dashboard"><?= t('dashboard') ?></span>
                             </a></li>
                             <li><a class="dropdown-item" href="/dashboard/documents.php" style="color:var(--irs-text);">
-                                <i class="bi bi-folder me-2"></i><?= t('submitted_docs') ?>
+                                <i class="bi bi-folder me-2"></i><span data-i18n="submitted_docs"><?= t('submitted_docs') ?></span>
                             </a></li>
                             <li><a class="dropdown-item" href="/dashboard/profile.php" style="color:var(--irs-text);">
-                                <i class="bi bi-person me-2"></i><?= t('profile') ?>
+                                <i class="bi bi-person me-2"></i><span data-i18n="profile"><?= t('profile') ?></span>
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="/logout.php">
-                                <i class="bi bi-box-arrow-right me-2"></i><?= t('logout') ?>
+                                <i class="bi bi-box-arrow-right me-2"></i><span data-i18n="logout"><?= t('logout') ?></span>
                             </a></li>
                         </ul>
                     </li>
                 <?php else: ?>
                     <li class="nav-item">
                         <a class="nav-link btn-nav-login" href="/login.php">
-                            <i class="bi bi-box-arrow-in-right me-1"></i><?= t('login') ?>
+                            <i class="bi bi-box-arrow-in-right me-1"></i><span data-i18n="login"><?= t('login') ?></span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link btn-nav-register" href="/register.php">
-                            <i class="bi bi-person-plus me-1"></i><?= t('register') ?>
+                            <i class="bi bi-person-plus me-1"></i><span data-i18n="register"><?= t('register') ?></span>
                         </a>
                     </li>
                 <?php endif; ?>
             </ul>
+        </div>
+
+        <!-- ====== ALWAYS VISIBLE: Lang + Theme + Bell + Toggler ====== -->
+        <div class="navbar-controls ms-auto d-flex align-items-center gap-2">
+            <!-- Sélecteur de langue -->
+            <select class="lang-selector nav-lang-selector" aria-label="<?= t('language') ?>" title="<?= t('language') ?>">
+                <option value="fr" <?= $lang === 'fr' ? 'selected' : '' ?>>🇫🇷 FR</option>
+                <option value="en" <?= $lang === 'en' ? 'selected' : '' ?>>🇬🇧 EN</option>
+            </select>
+            <!-- Toggle thème -->
+            <button class="theme-toggle nav-theme-toggle" title="<?= t('theme') ?>" data-i18n-title="theme">
+                <i class="bi <?= $theme === 'dark' ? 'bi-sun-fill' : 'bi-moon-fill' ?>"></i>
+            </button>
+            <!-- Cloche notification (toujours visible si connecté) -->
+            <?php if ($user): ?>
+            <a href="/dashboard/notifications.php" class="nav-bell-btn" title="<?= t('notifications') ?>">
+                <i class="bi bi-bell-fill"></i>
+                <?php if ($notif_count > 0): ?>
+                <span class="nav-bell-count"><?= $notif_count > 99 ? '99+' : $notif_count ?></span>
+                <?php endif; ?>
+            </a>
+            <?php endif; ?>
+            <!-- Toggler mobile -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-expanded="false">
+                <span class="navbar-toggler-icon"></span>
+            </button>
         </div>
     </div>
 </nav>

@@ -111,6 +111,10 @@ function getLang() {
     if (isset($_SESSION['lang']) && in_array($_SESSION['lang'], ['fr', 'en'])) {
         return $_SESSION['lang'];
     }
+    if (isset($_COOKIE['lang']) && in_array($_COOKIE['lang'], ['fr', 'en'])) {
+        $_SESSION['lang'] = $_COOKIE['lang'];
+        return $_COOKIE['lang'];
+    }
     return 'fr';
 }
 

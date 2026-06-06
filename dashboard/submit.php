@@ -87,6 +87,11 @@ $lang = getLang(); $theme = getTheme();
                     <p class="page-subtitle">Demandez une vérification approfondie de votre document</p>
                 </div>
             </div>
+            <?php $notif_count = getUserNotificationsCount($conn, $_SESSION['user_id']); ?>
+            <a href="/dashboard/notifications.php" class="nav-bell-btn" title="Notifications">
+                <i class="bi bi-bell-fill"></i>
+                <?php if ($notif_count > 0): ?><span class="nav-bell-count"><?= $notif_count > 99 ? '99+' : $notif_count ?></span><?php endif; ?>
+            </a>
         </div>
 
         <?php if ($error): ?>

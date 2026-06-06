@@ -43,9 +43,14 @@ $lang = getLang(); $theme = getTheme();
                     <p class="page-subtitle">Vos dernières notifications</p>
                 </div>
             </div>
-            <a href="/dashboard/notifications.php?mark_all=1" class="btn btn-sm btn-outline-secondary" style="border-radius:8px;">
-                <i class="bi bi-check2-all me-1"></i><?= t('mark_all_read') ?>
-            </a>
+            <div class="d-flex align-items-center gap-2">
+                <a href="/dashboard/notifications.php" class="nav-bell-btn active" title="Notifications" style="background:rgba(46,134,222,0.25);border-color:var(--irs-blue);">
+                    <i class="bi bi-bell-fill" style="color:var(--irs-blue);"></i>
+                </a>
+                <a href="/dashboard/notifications.php?mark_all=1" class="btn btn-sm btn-outline-secondary" style="border-radius:8px;">
+                    <i class="bi bi-check2-all me-1"></i><?= t('mark_all_read') ?>
+                </a>
+            </div>
         </div>
 
         <div class="irs-card">

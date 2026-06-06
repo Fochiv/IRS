@@ -36,6 +36,11 @@ $lang = getLang(); $theme = getTheme();
                 </div>
             </div>
             <div class="d-flex align-items-center gap-2">
+                <?php $notif_count = getUserNotificationsCount($conn, $_SESSION['user_id']); ?>
+                <a href="/dashboard/notifications.php" class="nav-bell-btn" title="<?= t('notifications') ?>">
+                    <i class="bi bi-bell-fill"></i>
+                    <?php if ($notif_count > 0): ?><span class="nav-bell-count"><?= $notif_count > 99 ? '99+' : $notif_count ?></span><?php endif; ?>
+                </a>
                 <select class="lang-selector topbar-control" style="padding:0.3rem 0.6rem;font-size:0.82rem;border-radius:6px;">
                     <option value="fr" <?= $lang === 'fr' ? 'selected' : '' ?>>🇫🇷 FR</option>
                     <option value="en" <?= $lang === 'en' ? 'selected' : '' ?>>🇬🇧 EN</option>

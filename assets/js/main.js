@@ -22,23 +22,71 @@ document.addEventListener('DOMContentLoaded', function () {
             const label = btn.querySelector('.theme-label');
             if (icon) icon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
             if (label) {
-                const darkLabel = (typeof window.IRS_LANG !== 'undefined' && window.IRS_LANG.theme_light) ? window.IRS_LANG.theme_light : 'Clair';
-                const lightLabel = (typeof window.IRS_LANG !== 'undefined' && window.IRS_LANG.theme_dark) ? window.IRS_LANG.theme_dark : 'Sombre';
-                label.textContent = theme === 'dark' ? darkLabel : lightLabel;
+                const cur = getCookie('lang') || document.documentElement.getAttribute('lang') || 'fr';
+                if (label) label.textContent = theme === 'dark'
+                    ? (cur === 'en' ? 'Light' : 'Clair')
+                    : (cur === 'en' ? 'Dark'  : 'Sombre');
             }
         });
     }
 
-    // ===== LANGUAGE (AJAX - sans rechargement de page complète) =====
+    // ===== LIVE TRANSLATION (sans rechargement) =====
+    function applyTranslations(lang) {
+        const strings = window.IRS_TRANSLATIONS && window.IRS_TRANSLATIONS[lang];
+        if (!strings) return;
+        // Update text content
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (strings[key] !== undefined) el.textContent = strings[key];
+        });
+        // Update placeholders
+        document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+            const key = el.getAttribute('data-i18n-ph');
+            if (strings[key] !== undefined) el.placeholder = strings[key];
+        });
+        // Update title attributes
+        document.querySelectorAll('[data-i18n-title]').forEach(el => {
+            const key = el.getAttribute('data-i18n-title');
+            if (strings[key] !== undefined) el.title = strings[key];
+        });
+        // Update html lang attribute
+        document.documentElement.setAttribute('lang', lang);
+        // Sync all lang selectors
+        document.querySelectorAll('.lang-selector, .nav-lang-selector').forEach(s => { s.value = lang; });
+        // Update IRS_LANG for verification widget
+        window.IRS_LANG = Object.assign({}, strings, {
+            download_certificate: lang === 'fr' ? 'Télécharger le certificat officiel' : 'Download official certificate',
+            download_original:    lang === 'fr' ? 'Télécharger le document original'    : 'Download original document',
+            doc_preview:          lang === 'fr' ? 'Aperçu du document'                  : 'Document preview',
+        });
+        // Update theme toggle labels
+        const theme = document.documentElement.getAttribute('data-theme') || 'light';
+        document.querySelectorAll('.theme-label').forEach(lbl => {
+            lbl.textContent = theme === 'dark'
+                ? (lang === 'en' ? 'Light' : 'Clair')
+                : (lang === 'en' ? 'Dark' : 'Sombre');
+        });
+    }
+
+    // Apply current language on page load (instant, no fetch)
+    const initLang = getCookie('lang') || document.documentElement.getAttribute('lang') || 'fr';
+    applyTranslations(initLang);
+
+    // Language selector change handler
     document.querySelectorAll('.lang-selector, .nav-lang-selector').forEach(sel => {
         sel.addEventListener('change', function () {
             const lang = this.value;
-            // Met à jour la session via AJAX puis recharge la page
+            // 1. Apply in-place immediately (navbar, footer, all data-i18n elements)
+            applyTranslations(lang);
+            setCookie('lang', lang, 365);
+            // 2. Save to session via AJAX
             fetch('/set-lang.php?lang=' + encodeURIComponent(lang), {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(() => window.location.reload())
-            .catch(() => window.location.reload());
+            }).catch(() => {});
+            // 3. Smooth fade + reload for body content that is PHP-rendered
+            document.body.style.transition = 'opacity 0.2s ease';
+            document.body.style.opacity = '0';
+            setTimeout(() => window.location.reload(), 220);
         });
     });
 
@@ -53,6 +101,13 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // Fade in on page load
+    document.body.style.opacity = '0';
+    document.body.style.transition = 'opacity 0.25s ease';
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => { document.body.style.opacity = '1'; });
+    });
+
     // ===== SIDEBAR TOGGLE (mobile) =====
     const sidebarToggle = document.getElementById('sidebarToggle');
     const sidebar = document.getElementById('sidebar');
@@ -64,7 +119,6 @@ document.addEventListener('DOMContentLoaded', function () {
             if (overlay) overlay.classList.toggle('show');
         });
     }
-
     if (overlay) {
         overlay.addEventListener('click', function () {
             sidebar.classList.remove('open');
@@ -77,15 +131,11 @@ document.addEventListener('DOMContentLoaded', function () {
     if (counters.length > 0) {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    animateCounter(entry.target);
-                    observer.unobserve(entry.target);
-                }
+                if (entry.isIntersecting) { animateCounter(entry.target); observer.unobserve(entry.target); }
             });
         }, { threshold: 0.5 });
         counters.forEach(c => observer.observe(c));
     }
-
     function animateCounter(el) {
         const target = parseInt(el.getAttribute('data-counter'));
         const suffix = el.getAttribute('data-suffix') || '';
@@ -94,10 +144,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let current = 0;
         const timer = setInterval(() => {
             current += step;
-            if (current >= target) {
-                current = target;
-                clearInterval(timer);
-            }
+            if (current >= target) { current = target; clearInterval(timer); }
             el.textContent = Math.floor(current).toLocaleString() + suffix;
         }, 16);
     }
@@ -116,11 +163,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function performVerification(docNumber) {
         const resultContainer = document.getElementById('verifyResult');
         if (!resultContainer) return;
-
         resultContainer.innerHTML = buildTimeline();
         resultContainer.style.display = 'block';
         resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
         runTimeline(docNumber);
     }
 
@@ -136,23 +181,18 @@ document.addEventListener('DOMContentLoaded', function () {
             { icon: 'bi-person-check', name: L.expert_verification },
             { icon: 'bi-patch-check', name: L.final_validation },
         ];
-
         let html = `<div class="verify-timeline fade-in-up">
-            <h6 class="fw-bold mb-3"><i class="bi bi-activity me-2 text-irs-blue"></i>Analyse en cours...</h6>`;
-
+            <h6 class="fw-bold mb-3"><i class="bi bi-activity me-2 text-irs-blue"></i>${L.verifying || 'Analyse en cours...'}</h6>`;
         steps.forEach((s, i) => {
             html += `<div class="timeline-step" id="step-${i}">
                 <div class="timeline-step-icon"><i class="bi ${s.icon}"></i></div>
                 <div class="timeline-step-info">
                     <div class="timeline-step-name">${s.name}</div>
-                    <div class="timeline-step-progress">
-                        <div class="timeline-step-bar" id="bar-${i}"></div>
-                    </div>
+                    <div class="timeline-step-progress"><div class="timeline-step-bar" id="bar-${i}"></div></div>
                 </div>
                 <div class="timeline-step-pct" id="pct-${i}">0%</div>
             </div>`;
         });
-
         html += `</div>`;
         return html;
     }
@@ -161,7 +201,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const steps = document.querySelectorAll('.timeline-step');
         const delays = [600, 900, 800, 1000, 900, 1100, 1200, 700];
         let total = 0;
-
         steps.forEach((step, i) => {
             setTimeout(() => {
                 step.classList.add('active');
@@ -172,30 +211,22 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (icon) icon.className = 'bi bi-check-lg';
                 });
             }, total);
-
             total += delays[i] + 200;
         });
-
-        setTimeout(() => {
-            fetchVerifyResult(docNumber);
-        }, total + 300);
+        setTimeout(() => fetchVerifyResult(docNumber), total + 300);
     }
 
     function animateBar(index, duration, callback) {
         const bar = document.getElementById('bar-' + index);
         const pct = document.getElementById('pct-' + index);
         if (!bar || !pct) return;
-
         let current = 0;
         const step = 100 / (duration / 30);
         const timer = setInterval(() => {
             current = Math.min(100, current + step);
             bar.style.width = current + '%';
             pct.textContent = Math.floor(current) + '%';
-            if (current >= 100) {
-                clearInterval(timer);
-                if (callback) callback();
-            }
+            if (current >= 100) { clearInterval(timer); if (callback) callback(); }
         }, 30);
     }
 
@@ -206,12 +237,8 @@ document.addEventListener('DOMContentLoaded', function () {
             body: 'doc_number=' + encodeURIComponent(docNumber)
         })
         .then(r => r.json())
-        .then(data => {
-            displayResult(data);
-        })
-        .catch(() => {
-            displayError();
-        });
+        .then(data => displayResult(data))
+        .catch(() => displayError());
     }
 
     function displayResult(data) {
@@ -222,6 +249,34 @@ document.addEventListener('DOMContentLoaded', function () {
         if (data.found) {
             const doc = data.document;
             const certUrl = '/api/download-certificate.php?doc=' + encodeURIComponent(doc.document_number);
+
+            // === APERÇU DU DOCUMENT STOCKÉ ===
+            let previewHtml = '';
+            if (doc.file_path) {
+                const ext = doc.file_path.split('.').pop().toLowerCase();
+                const isImg = ['jpg','jpeg','png','gif','webp'].includes(ext);
+                const isPDF = (ext === 'pdf');
+                if (isImg) {
+                    previewHtml = `
+                    <div class="doc-file-preview mb-3">
+                        <div class="doc-preview-label"><i class="bi bi-eye me-1"></i>${L.doc_preview || 'Aperçu du document'}</div>
+                        <div class="doc-preview-img-wrap">
+                            <img src="/${escHtml(doc.file_path)}" alt="Document" class="doc-preview-img" onclick="this.closest('.doc-file-preview').querySelector('.doc-preview-fullscreen').classList.toggle('show')">
+                            <div class="doc-preview-fullscreen">
+                                <button class="doc-preview-close" onclick="this.closest('.doc-preview-fullscreen').classList.remove('show')"><i class="bi bi-x-lg"></i></button>
+                                <img src="/${escHtml(doc.file_path)}" alt="Document">
+                            </div>
+                        </div>
+                    </div>`;
+                } else if (isPDF) {
+                    previewHtml = `
+                    <div class="doc-file-preview mb-3">
+                        <div class="doc-preview-label"><i class="bi bi-file-pdf me-1"></i>${L.doc_preview || 'Aperçu du document'}</div>
+                        <iframe src="/${escHtml(doc.file_path)}" class="doc-preview-pdf" title="Document PDF"></iframe>
+                    </div>`;
+                }
+            }
+
             resultContainer.innerHTML = `
                 <div class="verify-result-container fade-in-up">
                     <div class="text-center mb-3">
@@ -237,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <div class="verify-info-card">
                         <div class="info-header">
                             <i class="bi bi-file-earmark-text"></i>
-                            <span>Informations du Document</span>
+                            <span>${L.doc_type || 'Informations du Document'}</span>
                         </div>
                         <div class="info-body">
                             <div class="info-row">
@@ -274,12 +329,15 @@ document.addEventListener('DOMContentLoaded', function () {
                             </div>
                         </div>
                     </div>
-                    <div class="mt-3 text-center d-flex gap-2 justify-content-center flex-wrap">
+
+                    ${previewHtml}
+
+                    <div class="mt-3 d-flex gap-2 justify-content-center flex-wrap">
                         <a href="${certUrl}" target="_blank" class="btn btn-success">
                             <i class="bi bi-file-earmark-check me-2"></i>${L.download_certificate || 'Télécharger le certificat'}
                         </a>
-                        ${doc.file_path ? `<a href="/${escHtml(doc.file_path)}" class="btn btn-outline-primary" target="_blank">
-                            <i class="bi bi-download me-2"></i>${L.download_doc}
+                        ${doc.file_path ? `<a href="/${escHtml(doc.file_path)}" class="btn btn-outline-primary" target="_blank" download>
+                            <i class="bi bi-download me-2"></i>${L.download_original || 'Document original'}
                         </a>` : ''}
                     </div>
                 </div>`;
@@ -290,14 +348,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         <img src="/doc_non_verifier.png" alt="Not Verified" style="height:120px;" class="mb-3">
                         <div class="not-verified-stamp mx-auto d-inline-flex">
                             <i class="bi bi-x-circle-fill"></i>
-                            <div>
-                                <div>${L.not_verified_badge}</div>
-                            </div>
+                            <div><div>${L.not_verified_badge}</div></div>
                         </div>
                     </div>
                     <div class="alert alert-danger text-center" style="border-radius:12px;">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                        ${L.doc_not_found}
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>${L.doc_not_found}
                     </div>
                     <div class="text-center mt-3">
                         <a href="/register.php" class="btn btn-danger me-2">
@@ -318,8 +373,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // ===== CONFIRM DELETE =====
     document.querySelectorAll('[data-confirm]').forEach(el => {
         el.addEventListener('click', function (e) {
-            const msg = this.getAttribute('data-confirm');
-            if (!confirm(msg)) e.preventDefault();
+            if (!confirm(this.getAttribute('data-confirm'))) e.preventDefault();
         });
     });
 
@@ -337,40 +391,35 @@ document.addEventListener('DOMContentLoaded', function () {
         return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
-    function getCookie(name) {
-        const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
-        return v ? v.pop() : null;
-    }
-
-    function setCookie(name, value, days) {
-        const d = new Date();
-        d.setTime(d.getTime() + days * 864e5);
-        document.cookie = name + '=' + value + ';expires=' + d.toUTCString() + ';path=/';
-    }
-
 });
 
-// Default IRS_LANG (overridden by page)
+// ===== COOKIE HELPERS (global scope) =====
+function getCookie(name) {
+    const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return v ? v.pop() : null;
+}
+function setCookie(name, value, days) {
+    const d = new Date();
+    d.setTime(d.getTime() + days * 864e5);
+    document.cookie = name + '=' + value + ';expires=' + d.toUTCString() + ';path=/';
+}
+
+// Default IRS_LANG fallback
 window.IRS_LANG = window.IRS_LANG || {
-    verified_badge: 'VERIFIED',
-    not_verified_badge: 'NOT VERIFIED',
+    verified_badge: 'VERIFIED', not_verified_badge: 'NOT VERIFIED',
     doc_authenticated: 'Document Authenticated',
     doc_not_found: 'This document does not exist in our registry.',
     submit_for_analysis: 'Submit for Analysis',
     download_doc: 'Download official document',
     download_certificate: 'Download official certificate',
-    doc_received: 'Document received',
-    analyzing_structure: 'Structure analysis',
-    analyzing_data: 'Data analysis',
-    ocr_analysis: 'OCR analysis',
-    security_analysis: 'Security analysis',
-    ai_verification: 'AI Verification',
-    expert_verification: 'Expert verification',
-    final_validation: 'Final validation',
-    holder_name: 'Holder name',
-    doc_type: 'Document type',
-    issuing_org: 'Issuing organization',
-    issue_date: 'Issue date',
-    country_origin: 'Country of origin',
-    verify_date: 'Verification date',
+    download_original: 'Download original document',
+    doc_preview: 'Document preview',
+    doc_received: 'Document received', analyzing_structure: 'Structure analysis',
+    analyzing_data: 'Data analysis', ocr_analysis: 'OCR analysis',
+    security_analysis: 'Security analysis', ai_verification: 'AI Verification',
+    expert_verification: 'Expert verification', final_validation: 'Final validation',
+    holder_name: 'Holder name', doc_type: 'Document type',
+    issuing_org: 'Issuing organization', issue_date: 'Issue date',
+    country_origin: 'Country of origin', verify_date: 'Verification date',
+    status: 'Status', verifying: 'Verifying...',
 };

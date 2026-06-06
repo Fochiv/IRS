@@ -73,4 +73,4 @@ $dir = basename(dirname($_SERVER['PHP_SELF']));
         </a>
     </div>
 </div>
-<div class="overlay" id="sidebarOverlay"></div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>

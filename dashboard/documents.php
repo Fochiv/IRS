@@ -37,9 +37,16 @@ $lang = getLang(); $theme = getTheme();
                     <p class="page-subtitle">Gérez tous vos documents soumis</p>
                 </div>
             </div>
-            <a href="/dashboard/submit.php" class="btn btn-sm" style="background:var(--irs-blue);color:white;border-radius:8px;">
-                <i class="bi bi-upload me-1"></i>Nouveau document
-            </a>
+            <div class="d-flex align-items-center gap-2">
+                <?php $notif_count = getUserNotificationsCount($conn, $_SESSION['user_id']); ?>
+                <a href="/dashboard/notifications.php" class="nav-bell-btn" title="Notifications">
+                    <i class="bi bi-bell-fill"></i>
+                    <?php if ($notif_count > 0): ?><span class="nav-bell-count"><?= $notif_count > 99 ? '99+' : $notif_count ?></span><?php endif; ?>
+                </a>
+                <a href="/dashboard/submit.php" class="btn btn-sm" style="background:var(--irs-blue);color:white;border-radius:8px;">
+                    <i class="bi bi-upload me-1"></i>Nouveau document
+                </a>
+            </div>
         </div>
 
         <?php if (isset($_GET['msg']) && $_GET['msg'] === 'submitted'): ?>

@@ -1,11 +1,12 @@
 <?php
 $lang = getLang(); $theme = getTheme();
-// Lire l'email de contact depuis la DB (avec fallback)
 function getSettingFooter($conn, $key, $default = '') {
-    $key = $conn->real_escape_string($key);
-    $r = $conn->query("SELECT setting_value FROM settings WHERE setting_key = '$key' LIMIT 1");
-    if ($r && $r->num_rows > 0) return $r->fetch_assoc()['setting_value'];
-    return $default;
+    static $cache = [];
+    if (isset($cache[$key])) return $cache[$key];
+    $k = $conn->real_escape_string($key);
+    $r = $conn->query("SELECT setting_value FROM settings WHERE setting_key='$k' LIMIT 1");
+    $cache[$key] = ($r && $r->num_rows > 0) ? $r->fetch_assoc()['setting_value'] : $default;
+    return $cache[$key];
 }
 $contact_email = getSettingFooter($conn, 'site_email', 'internationalregistrationserve@gmail.com');
 ?>
@@ -21,31 +22,31 @@ $contact_email = getSettingFooter($conn, 'site_email', 'internationalregistratio
                         <div class="brand-sub">International Registration Server</div>
                     </div>
                 </div>
-                <p class="footer-desc"><?= t('about_text') ?></p>
+                <p class="footer-desc" data-i18n="about_text"><?= t('about_text') ?></p>
             </div>
             <div class="col-lg-2 col-md-6">
-                <h6 class="footer-heading"><?= t('home') ?></h6>
+                <h6 class="footer-heading" data-i18n="home"><?= t('home') ?></h6>
                 <ul class="footer-links">
-                    <li><a href="/index.php#about-section"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><?= t('about') ?></a></li>
-                    <li><a href="/index.php#verify-section"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><?= t('verify') ?></a></li>
-                    <li><a href="/index.php#faq-section"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><?= t('faq') ?></a></li>
-                    <li><a href="/index.php#contact-section"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><?= t('contact') ?></a></li>
+                    <li><a href="/index.php#about-section"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><span data-i18n="about"><?= t('about') ?></span></a></li>
+                    <li><a href="/index.php#verify-section"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><span data-i18n="verify"><?= t('verify') ?></span></a></li>
+                    <li><a href="/index.php#faq-section"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><span data-i18n="faq"><?= t('faq') ?></span></a></li>
+                    <li><a href="/index.php#contact-section"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><span data-i18n="contact"><?= t('contact') ?></span></a></li>
                 </ul>
             </div>
             <div class="col-lg-3 col-md-6">
                 <h6 class="footer-heading">Services</h6>
                 <ul class="footer-links">
-                    <li><a href="/index.php#verify-section"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><?= $lang === 'fr' ? 'Vérifier un document' : 'Verify a document' ?></a></li>
-                    <li><a href="/register.php"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><?= $lang === 'fr' ? 'Soumettre un document' : 'Submit a document' ?></a></li>
-                    <li><a href="/login.php"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><?= t('login') ?></a></li>
-                    <li><a href="/register.php"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><?= t('register') ?></a></li>
+                    <li><a href="/index.php#verify-section"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><span data-i18n="verify_doc_link"><?= $lang === 'fr' ? 'Vérifier un document' : 'Verify a document' ?></span></a></li>
+                    <li><a href="/register.php"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><span data-i18n="submit_doc"><?= t('submit_doc') ?></span></a></li>
+                    <li><a href="/login.php"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><span data-i18n="login"><?= t('login') ?></span></a></li>
+                    <li><a href="/register.php"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><span data-i18n="register"><?= t('register') ?></span></a></li>
                 </ul>
             </div>
             <div class="col-lg-3 col-md-6">
-                <h6 class="footer-heading"><?= $lang === 'fr' ? 'Légal' : 'Legal' ?></h6>
+                <h6 class="footer-heading" data-i18n="legal"><?= $lang === 'fr' ? 'Légal' : 'Legal' ?></h6>
                 <ul class="footer-links">
-                    <li><a href="/privacy.php"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><?= t('privacy') ?></a></li>
-                    <li><a href="/terms.php"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><?= t('terms') ?></a></li>
+                    <li><a href="/privacy.php"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><span data-i18n="privacy"><?= t('privacy') ?></span></a></li>
+                    <li><a href="/terms.php"><i class="bi bi-chevron-right me-1" style="font-size:0.7rem;"></i><span data-i18n="terms"><?= t('terms') ?></span></a></li>
                 </ul>
                 <div class="mt-3">
                     <div style="color:rgba(255,255,255,0.6);font-size:0.8rem;margin-bottom:0.5rem;">
@@ -59,7 +60,7 @@ $contact_email = getSettingFooter($conn, 'site_email', 'internationalregistratio
         </div>
 
         <div class="footer-bottom">
-            <span class="copyright"><?= t('rights') ?></span>
+            <span class="copyright" data-i18n="rights"><?= t('rights') ?></span>
             <div class="footer-controls">
                 <select class="lang-selector" aria-label="Langue">
                     <option value="fr" <?= $lang === 'fr' ? 'selected' : '' ?>>🇫🇷 Français</option>
@@ -75,35 +76,27 @@ $contact_email = getSettingFooter($conn, 'site_email', 'internationalregistratio
 </footer>
 
 <!-- Bouton retour en haut -->
-<button id="backToTop" title="Retour en haut">
+<button id="backToTop" title="<?= $lang === 'fr' ? 'Retour en haut' : 'Back to top' ?>">
     <i class="bi bi-arrow-up"></i>
 </button>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-window.IRS_LANG = {
-    verified_badge: '<?= addslashes(t("verified_badge")) ?>',
-    not_verified_badge: '<?= addslashes(t("not_verified_badge")) ?>',
-    doc_authenticated: '<?= addslashes(t("doc_authenticated")) ?>',
-    doc_not_found: '<?= addslashes(t("doc_not_found")) ?>',
-    submit_for_analysis: '<?= addslashes(t("submit_for_analysis")) ?>',
-    download_doc: '<?= addslashes(t("download_doc")) ?>',
-    doc_received: '<?= addslashes(t("doc_received")) ?>',
-    analyzing_structure: '<?= addslashes(t("analyzing_structure")) ?>',
-    analyzing_data: '<?= addslashes(t("analyzing_data")) ?>',
-    ocr_analysis: '<?= addslashes(t("ocr_analysis")) ?>',
-    security_analysis: '<?= addslashes(t("security_analysis")) ?>',
-    ai_verification: '<?= addslashes(t("ai_verification")) ?>',
-    expert_verification: '<?= addslashes(t("expert_verification")) ?>',
-    final_validation: '<?= addslashes(t("final_validation")) ?>',
-    download_certificate: '<?= $lang === "fr" ? "Télécharger le certificat officiel" : "Download official certificate" ?>',
-    holder_name: '<?= addslashes(t("holder_name")) ?>',
-    doc_type: '<?= addslashes(t("doc_type")) ?>',
-    issuing_org: '<?= addslashes(t("issuing_org")) ?>',
-    issue_date: '<?= addslashes(t("issue_date")) ?>',
-    country_origin: '<?= addslashes(t("country_origin")) ?>',
-    verify_date: '<?= addslashes(t("verify_date")) ?>',
+<?php
+$fr = require __DIR__ . '/../lang/fr.php';
+$en = require __DIR__ . '/../lang/en.php';
+?>
+window.IRS_TRANSLATIONS = {
+    fr: <?= json_encode($fr, JSON_UNESCAPED_UNICODE) ?>,
+    en: <?= json_encode($en, JSON_UNESCAPED_UNICODE) ?>
 };
+window.IRS_LANG = window.IRS_TRANSLATIONS['<?= $lang ?>'] || window.IRS_TRANSLATIONS['fr'];
+// Extra keys for JS verification UI
+window.IRS_LANG.download_certificate = '<?= $lang === "fr" ? "Télécharger le certificat officiel" : "Download official certificate" ?>';
+window.IRS_LANG.download_original = '<?= $lang === "fr" ? "Télécharger le document original" : "Download original document" ?>';
+window.IRS_LANG.doc_preview = '<?= $lang === "fr" ? "Aperçu du document" : "Document preview" ?>';
+window.IRS_LANG.verify_doc_link = '<?= $lang === "fr" ? "Vérifier un document" : "Verify a document" ?>';
+window.IRS_LANG.legal = '<?= $lang === "fr" ? "Légal" : "Legal" ?>';
 </script>
 <script src="/assets/js/main.js"></script>
 <?= isset($extra_js) ? $extra_js : '' ?>

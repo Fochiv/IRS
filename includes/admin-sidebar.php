@@ -72,4 +72,4 @@
         </a>
     </div>
 </div>
-<div class="overlay" id="sidebarOverlay"></div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>

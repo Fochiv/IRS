@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_document'])) {
 
 $search = $conn->real_escape_string($_GET['search'] ?? '');
 $where = $search ? "WHERE document_number LIKE '%$search%' OR holder_name LIKE '%$search%' OR document_type LIKE '%$search%'" : '';
-$docs = $conn->query("SELECT * FROM documents $where ORDER BY created_at DESC");
+$docs = $conn->query("SELECT * FROM documents $where ORDER BY created_at ASC");
 $lang = getLang(); $theme = getTheme();
 ?>
 <!DOCTYPE html>
