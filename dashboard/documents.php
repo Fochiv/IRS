@@ -10,6 +10,21 @@ if ($filter) $where .= " AND status = '$filter'";
 
 $docs = $conn->query("SELECT * FROM submitted_documents WHERE $where ORDER BY submitted_at DESC");
 
+// Pré-charger les documents officiels pour les soumissions validées
+$officialDocs = [];
+if ($docs && $docs->num_rows > 0) {
+    $docsCopy = $conn->query("SELECT * FROM submitted_documents WHERE $where ORDER BY submitted_at DESC");
+    while ($tmp = $docsCopy->fetch_assoc()) {
+        if ($tmp['status'] === 'validated') {
+            $dn = $conn->real_escape_string($tmp['document_number']);
+            $official = $conn->query("SELECT * FROM documents WHERE document_number='$dn' LIMIT 1");
+            if ($official && $official->num_rows > 0) {
+                $officialDocs[$tmp['document_number']] = $official->fetch_assoc();
+            }
+        }
+    }
+}
+
 $lang = getLang(); $theme = getTheme();
 ?>
 <!DOCTYPE html>
@@ -73,7 +88,7 @@ $lang = getLang(); $theme = getTheme();
         </div>
 
         <div class="irs-card">
-            <div style="overflow-x:auto;">
+            <div class="table-wrap">
                 <?php if ($docs && $docs->num_rows > 0): ?>
                 <table class="irs-table w-100">
                     <thead>
@@ -89,7 +104,10 @@ $lang = getLang(); $theme = getTheme();
                         </tr>
                     </thead>
                     <tbody>
-                        <?php $n=1; while ($doc = $docs->fetch_assoc()): ?>
+                        <?php $n=1; while ($doc = $docs->fetch_assoc()):
+                            $official = $officialDocs[$doc['document_number']] ?? null;
+                            $certUrl = '/api/download-certificate.php?doc=' . urlencode($doc['document_number']);
+                        ?>
                         <tr>
                             <td><?= $n++ ?></td>
                             <td><span style="font-weight:600;"><?= htmlspecialchars($doc['document_name']) ?></span></td>
@@ -99,13 +117,13 @@ $lang = getLang(); $theme = getTheme();
                             <td style="white-space:nowrap;"><?= formatDateTime($doc['submitted_at']) ?></td>
                             <td><?= getStatusBadge($doc['status']) ?></td>
                             <td>
-                                <div class="d-flex gap-1">
+                                <div class="d-flex gap-1 flex-wrap">
                                     <button type="button" class="btn btn-sm btn-outline-primary" style="border-radius:6px;" data-bs-toggle="modal" data-bs-target="#docModal<?= $doc['id'] ?>" title="Détails">
                                         <i class="bi bi-eye"></i>
                                     </button>
-                                    <?php if ($doc['file_path']): ?>
-                                    <a href="/<?= htmlspecialchars($doc['file_path']) ?>" class="btn btn-sm btn-outline-success" style="border-radius:6px;" target="_blank" title="Télécharger">
-                                        <i class="bi bi-download"></i>
+                                    <?php if ($doc['status'] === 'validated'): ?>
+                                    <a href="<?= $certUrl ?>" class="btn btn-sm btn-outline-success" style="border-radius:6px;" target="_blank" title="Télécharger le certificat">
+                                        <i class="bi bi-award"></i>
                                     </a>
                                     <?php endif; ?>
                                 </div>
@@ -141,12 +159,72 @@ $lang = getLang(); $theme = getTheme();
                                                 <p style="color:var(--irs-text-muted);font-size:0.9rem;background:var(--irs-gray);padding:0.75rem;border-radius:8px;"><?= nl2br(htmlspecialchars($doc['description'])) ?></p>
                                             </div>
                                             <?php endif; ?>
+
+                                            <?php if ($doc['status'] === 'validated' && $official): ?>
+                                            <!-- DOCUMENT OFFICIEL -->
+                                            <div class="col-12">
+                                                <div style="background:rgba(40,167,69,0.08);border:1px solid rgba(40,167,69,0.25);border-radius:10px;padding:1rem;">
+                                                    <div style="font-weight:700;font-size:0.9rem;color:var(--irs-green);margin-bottom:0.75rem;">
+                                                        <i class="bi bi-patch-check-fill me-2"></i>Document officiel IRS
+                                                    </div>
+                                                    <?php
+                                                    $officialFile = $official['file_path'] ?? '';
+                                                    $officialImg  = $official['image_path'] ?? '';
+                                                    $previewFile  = $officialFile ?: $officialImg;
+                                                    $ext = $previewFile ? strtolower(pathinfo($previewFile, PATHINFO_EXTENSION)) : '';
+                                                    $isImg = in_array($ext, ['jpg','jpeg','png','gif','webp']);
+                                                    $isPDF = ($ext === 'pdf');
+                                                    ?>
+                                                    <?php if ($previewFile && $isImg): ?>
+                                                    <div class="doc-file-preview mb-3">
+                                                        <div class="doc-preview-label"><i class="bi bi-eye me-1"></i>Aperçu du document officiel</div>
+                                                        <div class="doc-preview-img-wrap">
+                                                            <img src="/<?= htmlspecialchars($previewFile) ?>" alt="Document officiel" class="doc-preview-img" onclick="this.closest('.doc-file-preview').querySelector('.doc-preview-fullscreen').classList.toggle('show')">
+                                                            <div class="doc-preview-fullscreen">
+                                                                <button class="doc-preview-close" onclick="this.closest('.doc-preview-fullscreen').classList.remove('show')"><i class="bi bi-x-lg"></i></button>
+                                                                <img src="/<?= htmlspecialchars($previewFile) ?>" alt="Document officiel">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <?php elseif ($previewFile && $isPDF): ?>
+                                                    <div class="doc-file-preview mb-3">
+                                                        <div class="doc-preview-label"><i class="bi bi-file-pdf me-1"></i>Aperçu du document officiel (PDF)</div>
+                                                        <iframe src="/<?= htmlspecialchars($previewFile) ?>" class="doc-preview-pdf" title="Document officiel PDF"></iframe>
+                                                    </div>
+                                                    <?php else: ?>
+                                                    <div style="text-align:center;padding:1rem;color:var(--irs-text-muted);font-size:0.9rem;">
+                                                        <i class="bi bi-file-earmark-text" style="font-size:2.5rem;opacity:0.4;display:block;margin-bottom:0.5rem;"></i>
+                                                        Document disponible en téléchargement
+                                                    </div>
+                                                    <?php endif; ?>
+
+                                                    <div class="d-flex gap-2 flex-wrap mt-2">
+                                                        <a href="<?= $certUrl ?>" class="btn btn-success btn-sm" target="_blank">
+                                                            <i class="bi bi-file-earmark-check me-1"></i>Télécharger le certificat officiel
+                                                        </a>
+                                                        <?php if ($previewFile): ?>
+                                                        <a href="/<?= htmlspecialchars($previewFile) ?>" class="btn btn-outline-primary btn-sm" target="_blank" download>
+                                                            <i class="bi bi-download me-1"></i>Télécharger le document officiel
+                                                        </a>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <?php elseif ($doc['status'] === 'validated'): ?>
+                                            <div class="col-12">
+                                                <div style="background:rgba(40,167,69,0.08);border:1px solid rgba(40,167,69,0.25);border-radius:10px;padding:1rem;">
+                                                    <div style="font-weight:700;font-size:0.9rem;color:var(--irs-green);margin-bottom:0.75rem;">
+                                                        <i class="bi bi-patch-check-fill me-2"></i>Document authentique
+                                                    </div>
+                                                    <a href="<?= $certUrl ?>" class="btn btn-success btn-sm" target="_blank">
+                                                        <i class="bi bi-file-earmark-check me-1"></i>Télécharger le certificat officiel
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                     <div class="modal-footer">
-                                        <?php if ($doc['file_path']): ?>
-                                        <a href="/<?= htmlspecialchars($doc['file_path']) ?>" class="btn btn-success btn-sm" target="_blank"><i class="bi bi-download me-1"></i>Télécharger PDF</a>
-                                        <?php endif; ?>
                                         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
                                     </div>
                                 </div>

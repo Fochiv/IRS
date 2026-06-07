@@ -137,7 +137,7 @@ $lang = getLang(); $theme = getTheme();
         <?php if (!empty($results['documents'])): ?>
         <div class="irs-card mb-4">
             <div class="irs-card-header"><h5 class="irs-card-title"><i class="bi bi-file-earmark-check" style="color:#198754;"></i>Documents officiels (<?= count($results['documents']) ?>)</h5></div>
-            <div style="overflow-x:auto;">
+            <div class="table-wrap">
                 <table class="irs-table w-100">
                     <thead><tr><th>Numéro</th><th>Titulaire</th><th>Type</th><th>Pays</th><th>Statut</th><th>Date</th></tr></thead>
                     <tbody>
@@ -160,7 +160,7 @@ $lang = getLang(); $theme = getTheme();
         <?php if (!empty($results['submitted'])): ?>
         <div class="irs-card mb-4">
             <div class="irs-card-header"><h5 class="irs-card-title"><i class="bi bi-clipboard-data" style="color:var(--irs-blue);"></i>Documents soumis (<?= count($results['submitted']) ?>)</h5></div>
-            <div style="overflow-x:auto;">
+            <div class="table-wrap">
                 <table class="irs-table w-100">
                     <thead><tr><th>Document</th><th>Numéro</th><th>Utilisateur</th><th>Type</th><th>Statut</th><th>Soumis</th></tr></thead>
                     <tbody>
@@ -183,7 +183,7 @@ $lang = getLang(); $theme = getTheme();
         <?php if (!empty($results['users'])): ?>
         <div class="irs-card">
             <div class="irs-card-header"><h5 class="irs-card-title"><i class="bi bi-people" style="color:var(--irs-blue);"></i>Utilisateurs (<?= count($results['users']) ?>)</h5></div>
-            <div style="overflow-x:auto;">
+            <div class="table-wrap">
                 <table class="irs-table w-100">
                     <thead><tr><th>Nom</th><th>Email</th><th>Pays</th><th>Statut</th><th>Inscrit</th></tr></thead>
                     <tbody>

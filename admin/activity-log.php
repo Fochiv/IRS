@@ -44,7 +44,7 @@ $lang = getLang(); $theme = getTheme();
         </div>
 
         <div class="irs-card">
-            <div style="overflow-x:auto;">
+            <div class="table-wrap">
                 <?php if ($logs && $logs->num_rows > 0): ?>
                 <table class="irs-table w-100">
                     <thead><tr><th>#</th><th>Action</th><th>Description</th><th>Acteur</th><th>IP</th><th>Date</th></tr></thead>

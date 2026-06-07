@@ -860,6 +860,7 @@ body {
 .dashboard-wrapper {
     display: flex;
     min-height: 100vh;
+    overflow-x: hidden;
 }
 
 .sidebar {
@@ -994,6 +995,8 @@ body {
 .main-content {
     margin-left: 260px;
     flex: 1;
+    min-width: 0;
+    overflow-x: hidden;
     padding: 2rem;
     min-height: 100vh;
     background: var(--irs-body-bg);
@@ -1219,19 +1222,19 @@ body {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.2);
+    background: var(--irs-gray);
+    border: 1px solid var(--irs-border);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: var(--irs-text);
     text-decoration: none;
     transition: var(--transition);
     flex-shrink: 0;
 }
 .nav-bell-btn:hover {
-    background: rgba(255,255,255,0.22);
-    color: white;
+    background: var(--irs-border);
+    color: var(--irs-blue);
     transform: scale(1.05);
 }
 .nav-bell-btn i {

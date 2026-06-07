@@ -112,7 +112,7 @@ $lang = getLang(); $theme = getTheme();
         </div>
 
         <div class="irs-card">
-            <div style="overflow-x:auto;">
+            <div class="table-wrap">
                 <?php if ($docs && $docs->num_rows > 0): ?>
                 <table class="irs-table w-100">
                     <thead><tr><th>#</th><th>Numéro</th><th>Titulaire</th><th>Type</th><th>Organisme</th><th>Pays</th><th>Date émission</th><th>Statut</th><th>Actions</th></tr></thead>

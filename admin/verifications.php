@@ -4,7 +4,6 @@ requireAdminLogin();
 
 $success = ''; $error = '';
 
-// Handle validate/reject/info_requested
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $vid = (int)($_POST['submission_id'] ?? 0);
     $action = $_POST['action'] ?? '';
@@ -16,14 +15,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($sub) {
             if ($action === 'validate') {
                 $conn->query("UPDATE submitted_documents SET status='validated',reviewed_by=$admin_id,reviewed_at=NOW(),rejection_reason=NULL WHERE id=$vid");
-                createNotification($conn, $sub['user_id'], 'Document validé !', "Votre document \"{$sub['document_name']}\" a été validé avec succès.", 'success');
+                createNotification($conn, $sub['user_id'], 'Document authentique !', "Votre document \"{$sub['document_name']}\" est un document authentique.", 'success');
                 logActivity($conn, 'admin_validate_doc', "Validation soumission ID: $vid", null, $admin_id);
                 $success = 'Document validé.';
             } elseif ($action === 'reject') {
-                $conn->query("UPDATE submitted_documents SET status='rejected',reviewed_by=$admin_id,reviewed_at=NOW(),rejection_reason='$reason' WHERE id=$vid");
-                createNotification($conn, $sub['user_id'], 'Document rejeté', "Votre document \"{$sub['document_name']}\" a été rejeté. Motif: $reason", 'danger');
-                logActivity($conn, 'admin_reject_doc', "Rejet soumission ID: $vid", null, $admin_id);
-                $success = 'Document rejeté.';
+                if (empty($reason)) {
+                    $error = 'Veuillez préciser le motif du rejet.';
+                } else {
+                    $conn->query("UPDATE submitted_documents SET status='rejected',reviewed_by=$admin_id,reviewed_at=NOW(),rejection_reason='$reason' WHERE id=$vid");
+                    createNotification($conn, $sub['user_id'], 'Document rejeté', "Votre document \"{$sub['document_name']}\" a été rejeté. Motif: $reason", 'danger');
+                    logActivity($conn, 'admin_reject_doc', "Rejet soumission ID: $vid", null, $admin_id);
+                    $success = 'Document rejeté.';
+                }
             } elseif ($action === 'info_requested') {
                 $conn->query("UPDATE submitted_documents SET status='info_requested',admin_notes='$reason' WHERE id=$vid");
                 createNotification($conn, $sub['user_id'], 'Informations requises', "Des informations complémentaires sont requises pour votre document \"{$sub['document_name']}\": $reason", 'warning');
@@ -66,11 +69,12 @@ $lang = getLang(); $theme = getTheme();
             </div>
         </div>
 
-        <?php if ($success): ?><div class="alert alert-success alert-dismissible fade show"><i class="bi bi-check-circle-fill me-2"></i><?= $success ?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div><?php endif; ?>
+        <?php if ($success): ?><div class="alert alert-success alert-dismissible fade show"><i class="bi bi-check-circle-fill me-2"></i><?= htmlspecialchars($success) ?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div><?php endif; ?>
+        <?php if ($error): ?><div class="alert alert-danger alert-dismissible fade show"><i class="bi bi-exclamation-triangle-fill me-2"></i><?= htmlspecialchars($error) ?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div><?php endif; ?>
 
         <div class="irs-card mb-3">
             <div class="irs-card-body py-2">
-                <form method="GET" class="d-flex gap-2 flex-wrap">
+                <form method="GET" class="d-flex gap-2 flex-wrap align-items-center">
                     <div class="search-box flex-grow-1" style="max-width:350px;">
                         <i class="bi bi-search"></i>
                         <input type="text" name="search" placeholder="Rechercher..." value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
@@ -89,10 +93,18 @@ $lang = getLang(); $theme = getTheme();
         </div>
 
         <div class="irs-card">
-            <div style="overflow-x:auto;">
+            <div class="table-wrap">
                 <?php if ($subs && $subs->num_rows > 0): ?>
                 <table class="irs-table w-100">
-                    <thead><tr><th>#</th><th>Document</th><th>Utilisateur</th><th>Type</th><th>Soumis le</th><th>Statut</th><th>Actions</th></tr></thead>
+                    <thead><tr>
+                        <th>#</th>
+                        <th>Document</th>
+                        <th>Utilisateur</th>
+                        <th>Type</th>
+                        <th>Soumis le</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr></thead>
                     <tbody>
                         <?php $n=1; while ($s = $subs->fetch_assoc()): ?>
                         <tr>
@@ -109,7 +121,7 @@ $lang = getLang(); $theme = getTheme();
                             <td style="white-space:nowrap;"><?= formatDateTime($s['submitted_at']) ?></td>
                             <td><?= getStatusBadge($s['status']) ?></td>
                             <td>
-                                <div class="d-flex gap-1">
+                                <div class="d-flex gap-1 flex-wrap">
                                     <button class="btn btn-sm btn-outline-secondary" style="border-radius:6px;" data-bs-toggle="modal" data-bs-target="#detailModal<?= $s['id'] ?>" title="Détails"><i class="bi bi-eye"></i></button>
                                     <?php if ($s['status'] === 'pending' || $s['status'] === 'info_requested'): ?>
                                     <button class="btn btn-sm btn-outline-success" style="border-radius:6px;" data-bs-toggle="modal" data-bs-target="#actionModal<?= $s['id'] ?>validate" title="Valider"><i class="bi bi-check-lg"></i></button>
@@ -156,7 +168,12 @@ $lang = getLang(); $theme = getTheme();
                         <div class="modal fade" id="actionModal<?= $s['id'] ?>validate" tabindex="-1">
                             <div class="modal-dialog"><div class="modal-content">
                                 <div class="modal-header" style="background:#198754;border-radius:12px 12px 0 0;"><h5 class="modal-title text-white"><i class="bi bi-check-circle-fill me-2"></i>Valider le document</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
-                                <form method="POST"><div class="modal-body"><input type="hidden" name="submission_id" value="<?= $s['id'] ?>"><input type="hidden" name="action" value="validate"><p style="color:var(--irs-text);">Confirmer la validation de <strong>"<?= htmlspecialchars($s['document_name']) ?>"</strong> ?</p></div>
+                                <form method="POST"><div class="modal-body">
+                                    <input type="hidden" name="submission_id" value="<?= $s['id'] ?>">
+                                    <input type="hidden" name="action" value="validate">
+                                    <p style="color:var(--irs-text);">Confirmer la validation de <strong>"<?= htmlspecialchars($s['document_name']) ?>"</strong> ?</p>
+                                    <p style="color:var(--irs-text-muted);font-size:0.88rem;"><i class="bi bi-info-circle me-1"></i>L'utilisateur recevra une notification indiquant que son document est authentique.</p>
+                                </div>
                                 <div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Annuler</button><button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check-lg me-1"></i>Valider</button></div></form>
                             </div></div>
                         </div>
@@ -165,10 +182,27 @@ $lang = getLang(); $theme = getTheme();
                         <div class="modal fade" id="actionModal<?= $s['id'] ?>reject" tabindex="-1">
                             <div class="modal-dialog"><div class="modal-content">
                                 <div class="modal-header" style="background:#dc3545;border-radius:12px 12px 0 0;"><h5 class="modal-title text-white"><i class="bi bi-x-circle-fill me-2"></i>Rejeter le document</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
-                                <form method="POST"><div class="modal-body"><input type="hidden" name="submission_id" value="<?= $s['id'] ?>"><input type="hidden" name="action" value="reject">
-                                    <div class="mb-3"><label class="form-label">Motif du rejet *</label><select name="reason" class="form-select" required><option value="">-- Sélectionner --</option><?php foreach($reject_reasons as $r): ?><option value="<?=$r?>"><?=$r?></option><?php endforeach; ?></select></div>
-                                </div>
-                                <div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Annuler</button><button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-x-lg me-1"></i>Rejeter</button></div></form>
+                                <form method="POST" onsubmit="return validateRejectForm(this, <?= $s['id'] ?>)">
+                                    <div class="modal-body">
+                                        <input type="hidden" name="submission_id" value="<?= $s['id'] ?>">
+                                        <input type="hidden" name="action" value="reject">
+                                        <input type="hidden" name="reason" id="hiddenReason<?= $s['id'] ?>">
+                                        <div class="mb-3">
+                                            <label class="form-label">Motif du rejet *</label>
+                                            <select class="form-select" id="reasonSelect<?= $s['id'] ?>" onchange="onReasonChange(this, <?= $s['id'] ?>)">
+                                                <option value="">-- Sélectionner --</option>
+                                                <?php foreach($reject_reasons as $r): ?>
+                                                <option value="<?= htmlspecialchars($r) ?>"><?= htmlspecialchars($r) ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
+                                        <div id="customReasonDiv<?= $s['id'] ?>" style="display:none;">
+                                            <label class="form-label">Précisez le motif *</label>
+                                            <textarea class="form-control" id="customReason<?= $s['id'] ?>" rows="3" placeholder="Décrivez le motif du rejet..." oninput="document.getElementById('hiddenReason<?= $s['id'] ?>').value=this.value"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Annuler</button><button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-x-lg me-1"></i>Rejeter</button></div>
+                                </form>
                             </div></div>
                         </div>
 
@@ -195,4 +229,40 @@ $lang = getLang(); $theme = getTheme();
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/assets/js/main.js"></script>
+<script>
+function onReasonChange(sel, id) {
+    const customDiv = document.getElementById('customReasonDiv' + id);
+    const hidden = document.getElementById('hiddenReason' + id);
+    if (sel.value === 'Autre') {
+        customDiv.style.display = 'block';
+        hidden.value = '';
+        document.getElementById('customReason' + id).value = '';
+        document.getElementById('customReason' + id).focus();
+    } else {
+        customDiv.style.display = 'none';
+        hidden.value = sel.value;
+    }
+}
+
+function validateRejectForm(form, id) {
+    const sel = document.getElementById('reasonSelect' + id);
+    const hidden = document.getElementById('hiddenReason' + id);
+    if (!sel.value) {
+        alert('Veuillez sélectionner un motif de rejet.');
+        return false;
+    }
+    if (sel.value === 'Autre') {
+        const custom = document.getElementById('customReason' + id).value.trim();
+        if (!custom) {
+            alert('Veuillez préciser le motif du rejet.');
+            document.getElementById('customReason' + id).focus();
+            return false;
+        }
+        hidden.value = custom;
+    } else {
+        hidden.value = sel.value;
+    }
+    return true;
+}
+</script>
 </body></html>
