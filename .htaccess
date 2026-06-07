@@ -1,28 +1,37 @@
 Options -Indexes
 DirectoryIndex index.php
 
-# Security headers
+# Security headers (only if mod_headers is available)
 <IfModule mod_headers.c>
-    Header always set X-Content-Type-Options nosniff
+    Header always set X-Content-Type-Options "nosniff"
     Header always set X-XSS-Protection "1; mode=block"
 </IfModule>
 
-# Allow PDF/images to be displayed inline (needed for document previews)
+# Allow PDF/images to display inline for document previews
 <FilesMatch "\.(pdf|jpg|jpeg|png|gif|webp)$">
     <IfModule mod_headers.c>
         Header set Content-Disposition "inline"
-        Header set X-Frame-Options "SAMEORIGIN"
     </IfModule>
 </FilesMatch>
 
-# Protect sensitive files
+# Protect sensitive files (Apache 2.4 compatible)
 <FilesMatch "\.(sql|log|env|ini|conf)$">
-    Order allow,deny
-    Deny from all
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
 </FilesMatch>
 
-# Protect directories
+# Protect hidden files (dot files)
 <FilesMatch "^\.">
-    Order allow,deny
-    Deny from all
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
 </FilesMatch>

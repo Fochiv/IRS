@@ -1,15 +1,16 @@
 <?php
 // ─── Détection de l'environnement ───────────────────────────────────────────
-// 1. Replit  →  MariaDB local lancé par start.sh
-// 2. Aeonfree / hébergement mutualisé  →  MySQL distant
-// 3. WAMP / XAMPP / Laragon local  →  MySQL local
+// Priorité 1 : fichier sentinelle .aeonfree à la racine du projet
+// Priorité 2 : variable d'environnement AEONFREE=1
+// Priorité 3 : Replit (REPLIT_DB_URL ou /home/runner)
+// Priorité 4 : local WAMP/XAMPP (fallback)
 
+$rootDir    = __DIR__ . '/..';
 $isReplit   = isset($_SERVER['REPLIT_DB_URL']) || getenv('REPLIT_DB_URL') || file_exists('/home/runner');
-$isAeonfree = (!$isReplit && isset($_SERVER['HTTP_HOST']) && (
-    str_contains($_SERVER['SERVER_SOFTWARE'] ?? '', 'LiteSpeed') ||
-    getenv('AEONFREE') === '1' ||
-    file_exists(__DIR__ . '/../.aeonfree')   // fichier sentinelle optionnel
-));
+$isAeonfree = !$isReplit && (
+    file_exists($rootDir . '/.aeonfree') ||
+    getenv('AEONFREE') === '1'
+);
 
 if ($isReplit) {
     // ── Replit (développement) ──────────────────────────────────────────────
@@ -28,12 +29,13 @@ if ($isReplit) {
     define('DB_NAME', 'mseet_42122245_irs_db');
 
 } else {
-    // ── WAMP / XAMPP / Laragon (local) ─────────────────────────────────────
-    define('DB_HOST', 'localhost');
-    define('DB_USER', 'root');
-    define('DB_PASS', '');
+    // ── Fallback : utilise Aeonfree si ni Replit ni local détecté ───────────
+    // (hébergement mutualisé sans fichier .aeonfree)
+    define('DB_HOST', 'sql112.hstn.me');
+    define('DB_USER', 'mseet_42122245');
+    define('DB_PASS', '1214161820Ben');
     define('DB_PORT', 3306);
-    define('DB_NAME', 'irs_db');
+    define('DB_NAME', 'mseet_42122245_irs_db');
 }
 
 define('SITE_NAME', 'IRS - International Registration Server');
