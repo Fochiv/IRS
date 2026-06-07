@@ -61,7 +61,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_document'])) {
     $co = $conn->real_escape_string($_POST['country_of_origin'] ?? '');
     $st = $conn->real_escape_string($_POST['status'] ?? 'verified');
     $desc = $conn->real_escape_string($_POST['description'] ?? '');
-    $conn->query("UPDATE documents SET holder_name='$hn',document_type='$dt',issuing_organization='$io',issue_date='$id_date',country_of_origin='$co',status='$st',description='$desc' WHERE id=$did");
+
+    $file_update = '';
+    if (!empty($_FILES['doc_file']['name'])) {
+        $ext = strtolower(pathinfo($_FILES['doc_file']['name'], PATHINFO_EXTENSION));
+        if (in_array($ext, ['pdf','jpg','jpeg','png'])) {
+            $fname = uniqid().'_'.time().'.'.$ext;
+            $dest = __DIR__ . '/../uploads/documents/' . $fname;
+            if (!is_dir(dirname($dest))) mkdir(dirname($dest), 0775, true);
+            if (move_uploaded_file($_FILES['doc_file']['tmp_name'], $dest)) {
+                $fp = $conn->real_escape_string('uploads/documents/' . $fname);
+                $file_update = ",file_path='$fp'";
+            }
+        }
+    }
+    $conn->query("UPDATE documents SET holder_name='$hn',document_type='$dt',issuing_organization='$io',issue_date='$id_date',country_of_origin='$co',status='$st',description='$desc'$file_update WHERE id=$did");
     $success = 'Document modifié.';
 }
 
@@ -141,7 +155,7 @@ $lang = getLang(); $theme = getTheme();
                             <div class="modal-dialog modal-lg">
                                 <div class="modal-content">
                                     <div class="modal-header"><h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Modifier le document</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-                                    <form method="POST">
+                                    <form method="POST" enctype="multipart/form-data">
                                         <div class="modal-body">
                                             <input type="hidden" name="doc_id" value="<?= $d['id'] ?>">
                                             <div class="row g-3">
@@ -151,6 +165,16 @@ $lang = getLang(); $theme = getTheme();
                                                 <div class="col-md-6"><label class="form-label">Date émission</label><input type="date" name="issue_date" class="form-control" value="<?= $d['issue_date'] ?>"></div>
                                                 <div class="col-md-6"><label class="form-label">Pays</label><select name="country_of_origin" class="form-select"><?php foreach($countries as $c): ?><option value="<?=$c?>" <?=$d['country_of_origin']===$c?'selected':''?>><?=$c?></option><?php endforeach; ?></select></div>
                                                 <div class="col-md-6"><label class="form-label">Statut</label><select name="status" class="form-select"><option value="verified" <?=$d['status']==='verified'?'selected':''?>>Vérifié</option><option value="rejected" <?=$d['status']==='rejected'?'selected':''?>>Rejeté</option></select></div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Fichier officiel (PDF/Image)</label>
+                                                    <input type="file" name="doc_file" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
+                                                    <?php if ($d['file_path']): ?>
+                                                    <div style="margin-top:0.4rem;font-size:0.78rem;color:var(--irs-text-muted);">
+                                                        <i class="bi bi-paperclip me-1"></i>Fichier actuel :
+                                                        <a href="/<?= htmlspecialchars($d['file_path']) ?>" target="_blank" style="color:var(--irs-blue);"><?= basename($d['file_path']) ?></a>
+                                                    </div>
+                                                    <?php endif; ?>
+                                                </div>
                                                 <div class="col-12"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="2"><?= htmlspecialchars($d['description']) ?></textarea></div>
                                             </div>
                                         </div>
