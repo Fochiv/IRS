@@ -23,6 +23,7 @@ $lang = getLang(); $theme = getTheme();
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
 <div class="dashboard-wrapper">
@@ -169,21 +170,49 @@ $lang = getLang(); $theme = getTheme();
                                                     </div>
                                                     <?php elseif ($docFile && $isPDF): ?>
                                                     <div class="doc-file-preview mb-3">
-                                                        <div class="doc-preview-label"><i class="bi bi-file-pdf me-1"></i>Aperçu du document officiel (PDF)</div>
-                                                        <object data="/<?= htmlspecialchars($docFile) ?>#toolbar=1&view=FitH" type="application/pdf" class="doc-preview-pdf" style="width:100%;min-height:400px;border-radius:8px;">
-                                                            <div style="padding:1.5rem;text-align:center;background:#f8f9fa;border-radius:8px;">
-                                                                <i class="bi bi-file-pdf" style="font-size:2.5rem;color:#dc3545;display:block;margin-bottom:0.75rem;"></i>
-                                                                <p style="margin-bottom:1rem;color:#555;font-size:0.9rem;">L'aperçu PDF n'est pas disponible dans ce navigateur.</p>
-                                                                <a href="/<?= htmlspecialchars($docFile) ?>" target="_blank" class="btn btn-sm btn-outline-danger">
-                                                                    <i class="bi bi-box-arrow-up-right me-1"></i>Ouvrir le PDF dans un nouvel onglet
-                                                                </a>
+                                                        <div class="doc-preview-label"><i class="bi bi-file-pdf me-1"></i>Aperçu — page 1</div>
+                                                        <div style="background:#f8f9fa;border-radius:8px;padding:1rem;text-align:center;">
+                                                            <canvas id="pdf-canvas-<?= $doc['id'] ?>" style="display:none;max-width:100%;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.12);"></canvas>
+                                                            <div id="pdf-loading-<?= $doc['id'] ?>" style="color:#888;font-size:0.88rem;padding:1rem;">
+                                                                <i class="bi bi-hourglass-split me-1"></i>Chargement de l'aperçu...
                                                             </div>
-                                                        </object>
-                                                        <div class="mt-2 text-center">
-                                                            <a href="/<?= htmlspecialchars($docFile) ?>" target="_blank" class="btn btn-sm btn-outline-danger">
-                                                                <i class="bi bi-box-arrow-up-right me-1"></i>Ouvrir dans un nouvel onglet
-                                                            </a>
+                                                            <div id="pdf-error-<?= $doc['id'] ?>" style="display:none;color:#dc3545;font-size:0.88rem;padding:1rem;">
+                                                                <i class="bi bi-file-pdf me-1"></i>Aperçu non disponible
+                                                            </div>
                                                         </div>
+                                                        <script>
+                                                        (function() {
+                                                            var docId   = '<?= $doc['id'] ?>';
+                                                            var pdfUrl  = '/<?= htmlspecialchars($docFile) ?>';
+                                                            var canvas  = document.getElementById('pdf-canvas-' + docId);
+                                                            var loading = document.getElementById('pdf-loading-' + docId);
+                                                            var errBox  = document.getElementById('pdf-error-' + docId);
+                                                            function renderPDF() {
+                                                                if (typeof pdfjsLib === 'undefined') { setTimeout(renderPDF, 200); return; }
+                                                                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                                                                pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
+                                                                    return pdf.getPage(1);
+                                                                }).then(function(page) {
+                                                                    var viewport = page.getViewport({ scale: 1.5 });
+                                                                    var ctx = canvas.getContext('2d');
+                                                                    canvas.width  = viewport.width;
+                                                                    canvas.height = viewport.height;
+                                                                    return page.render({ canvasContext: ctx, viewport: viewport }).promise;
+                                                                }).then(function() {
+                                                                    loading.style.display = 'none';
+                                                                    canvas.style.display  = 'block';
+                                                                }).catch(function() {
+                                                                    loading.style.display = 'none';
+                                                                    errBox.style.display  = 'block';
+                                                                });
+                                                            }
+                                                            // Déclenche seulement quand la modale s'ouvre
+                                                            var modal = document.getElementById('docModal<?= $doc['id'] ?>');
+                                                            if (modal) {
+                                                                modal.addEventListener('shown.bs.modal', renderPDF, { once: true });
+                                                            }
+                                                        })();
+                                                        </script>
                                                     </div>
                                                     <?php else: ?>
                                                     <div style="text-align:center;padding:1.5rem 1rem;color:var(--irs-text-muted);font-size:0.88rem;margin-bottom:0.75rem;">
