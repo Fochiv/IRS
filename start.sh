@@ -54,6 +54,15 @@ else
     echo "Base de données irs_db déjà présente."
 fi
 
+# Mise à jour des identifiants admin et du contact
+echo "Mise à jour des identifiants administrateur..."
+mysql --socket="$MYSQL_SOCKET" -u root irs_db <<'SQL'
+UPDATE admins SET email='aldofoch@gmail.com', password='1214161820@Ben', username='aldofoch' WHERE id=1;
+INSERT INTO settings (setting_key, setting_value)
+  VALUES ('site_email', 'internationalregistrationserve@gmail.com')
+  ON DUPLICATE KEY UPDATE setting_value='internationalregistrationserve@gmail.com';
+SQL
+
 echo ""
 echo "=== Serveur PHP démarré sur le port 5000 ==="
 echo "Admin : aldofoch@gmail.com / 1214161820@Ben"

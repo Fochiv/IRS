@@ -8,54 +8,62 @@ $countries = getCountriesList();
 
 $doc_types = ['Diplôme', 'Baccalauréat', 'Passeport', 'Carte d\'identité', 'Acte de naissance', 'Acte de mariage', 'Attestation de travail', 'Certificat médical', 'Relevé de notes', 'Contrat', 'Permis de conduire', 'Visa', 'Autre'];
 
+// ===== Limite : 2 documents max par jour =====
+$uid = (int)$_SESSION['user_id'];
+$todayCount = $conn->query("SELECT COUNT(*) as cnt FROM submitted_documents WHERE user_id = $uid AND DATE(submitted_at) = CURDATE()")->fetch_assoc()['cnt'];
+$dailyLimitReached = ($todayCount >= 2);
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $doc_name  = trim($conn->real_escape_string($_POST['doc_name'] ?? ''));
-    $doc_number = trim($conn->real_escape_string($_POST['doc_number'] ?? ''));
-    $doc_type  = trim($conn->real_escape_string($_POST['doc_type'] ?? ''));
-    $issuing   = trim($conn->real_escape_string($_POST['issuing_org'] ?? ''));
-    $country   = trim($conn->real_escape_string($_POST['country'] ?? ''));
-    $desc      = trim($conn->real_escape_string($_POST['description'] ?? ''));
-    $uid       = (int)$_SESSION['user_id'];
-
-    if (empty($doc_name) || empty($doc_number) || empty($doc_type) || empty($issuing)) {
-        $error = 'Veuillez remplir tous les champs obligatoires.';
+    if ($dailyLimitReached) {
+        $error = 'Vous avez atteint la limite de soumissions pour aujourd\'hui. Veuillez réessayer demain.';
     } else {
-        $file_path = ''; $img_path = '';
+        $doc_name  = trim($conn->real_escape_string($_POST['doc_name'] ?? ''));
+        $doc_number = trim($conn->real_escape_string($_POST['doc_number'] ?? ''));
+        $doc_type  = trim($conn->real_escape_string($_POST['doc_type'] ?? ''));
+        $issuing   = trim($conn->real_escape_string($_POST['issuing_org'] ?? ''));
+        $country   = trim($conn->real_escape_string($_POST['country'] ?? ''));
+        $desc      = trim($conn->real_escape_string($_POST['description'] ?? ''));
 
-        if (!empty($_FILES['doc_pdf']['name'])) {
-            $allowed_pdf = ['pdf'];
-            $ext = strtolower(pathinfo($_FILES['doc_pdf']['name'], PATHINFO_EXTENSION));
-            if (!in_array($ext, $allowed_pdf)) {
-                $error = 'Le fichier PDF doit être au format .pdf';
-            } else {
-                $fname = uniqid() . '_' . time() . '.pdf';
-                $dest = __DIR__ . '/../uploads/documents/' . $fname;
-                if (move_uploaded_file($_FILES['doc_pdf']['tmp_name'], $dest)) {
-                    $file_path = 'uploads/documents/' . $fname;
+        if (empty($doc_name) || empty($doc_number) || empty($doc_type) || empty($issuing)) {
+            $error = 'Veuillez remplir tous les champs obligatoires.';
+        } else {
+            $file_path = ''; $img_path = '';
+
+            if (!empty($_FILES['doc_pdf']['name'])) {
+                $allowed_pdf = ['pdf'];
+                $ext = strtolower(pathinfo($_FILES['doc_pdf']['name'], PATHINFO_EXTENSION));
+                if (!in_array($ext, $allowed_pdf)) {
+                    $error = 'Le fichier PDF doit être au format .pdf';
+                } else {
+                    $fname = uniqid() . '_' . time() . '.pdf';
+                    $dest = __DIR__ . '/../uploads/documents/' . $fname;
+                    if (move_uploaded_file($_FILES['doc_pdf']['tmp_name'], $dest)) {
+                        $file_path = 'uploads/documents/' . $fname;
+                    }
                 }
             }
-        }
 
-        if (empty($error) && !empty($_FILES['doc_image']['name'])) {
-            $allowed_img = ['jpg', 'jpeg', 'png', 'gif'];
-            $ext = strtolower(pathinfo($_FILES['doc_image']['name'], PATHINFO_EXTENSION));
-            if (!in_array($ext, $allowed_img)) {
-                $error = 'L\'image doit être au format jpg, jpeg, png ou gif.';
-            } else {
-                $fname = uniqid() . '_' . time() . '.' . $ext;
-                $dest = __DIR__ . '/../uploads/images/' . $fname;
-                if (move_uploaded_file($_FILES['doc_image']['tmp_name'], $dest)) {
-                    $img_path = 'uploads/images/' . $fname;
+            if (empty($error) && !empty($_FILES['doc_image']['name'])) {
+                $allowed_img = ['jpg', 'jpeg', 'png', 'gif'];
+                $ext = strtolower(pathinfo($_FILES['doc_image']['name'], PATHINFO_EXTENSION));
+                if (!in_array($ext, $allowed_img)) {
+                    $error = 'L\'image doit être au format jpg, jpeg, png ou gif.';
+                } else {
+                    $fname = uniqid() . '_' . time() . '.' . $ext;
+                    $dest = __DIR__ . '/../uploads/images/' . $fname;
+                    if (move_uploaded_file($_FILES['doc_image']['tmp_name'], $dest)) {
+                        $img_path = 'uploads/images/' . $fname;
+                    }
                 }
             }
-        }
 
-        if (empty($error)) {
-            $conn->query("INSERT INTO submitted_documents (user_id, document_name, document_number, document_type, issuing_organization, country_of_origin, description, file_path, image_path) VALUES ($uid, '$doc_name', '$doc_number', '$doc_type', '$issuing', '$country', '$desc', '$file_path', '$img_path')");
-            $new_id = $conn->insert_id;
-            createNotification($conn, $uid, 'Document reçu', "Votre document \"$doc_name\" a été reçu et est en cours d'analyse.", 'info');
-            logActivity($conn, 'document_submit', "Document soumis: $doc_name ($doc_number)", $uid);
-            redirect('/dashboard/documents.php?msg=submitted');
+            if (empty($error)) {
+                $conn->query("INSERT INTO submitted_documents (user_id, document_name, document_number, document_type, issuing_organization, country_of_origin, description, file_path, image_path) VALUES ($uid, '$doc_name', '$doc_number', '$doc_type', '$issuing', '$country', '$desc', '$file_path', '$img_path')");
+                $new_id = $conn->insert_id;
+                createNotification($conn, $uid, 'Document reçu', "Votre document \"$doc_name\" a été reçu et est en cours d'analyse.", 'info');
+                logActivity($conn, 'document_submit', "Document soumis: $doc_name ($doc_number)", $uid);
+                redirect('/dashboard/documents.php?msg=submitted');
+            }
         }
     }
 }
@@ -101,6 +109,13 @@ $lang = getLang(); $theme = getTheme();
         </div>
         <?php endif; ?>
 
+        <?php if ($dailyLimitReached): ?>
+        <div class="alert alert-warning">
+            <i class="bi bi-clock-history me-2"></i>
+            <strong>Limite atteinte.</strong> Vous avez soumis le maximum de documents autorisés aujourd'hui. Revenez demain pour soumettre de nouveaux documents.
+        </div>
+        <?php endif; ?>
+
         <div class="row justify-content-center">
             <div class="col-lg-8">
                 <div class="irs-card">
@@ -108,6 +123,7 @@ $lang = getLang(); $theme = getTheme();
                         <h5 class="irs-card-title"><i class="bi bi-upload text-irs-blue"></i>Informations du document</h5>
                     </div>
                     <div class="irs-card-body">
+                        <?php if (!$dailyLimitReached): ?>
                         <form method="POST" enctype="multipart/form-data">
                             <div class="row g-3">
                                 <div class="col-md-6">
@@ -160,7 +176,7 @@ $lang = getLang(); $theme = getTheme();
                                         Votre document sera analysé par notre système IA et nos experts qualifiés. Vous serez notifié à chaque étape du processus.
                                     </div>
                                 </div>
-                                <div class="col-12 d-flex gap-3">
+                                <div class="col-12 d-flex gap-3 flex-wrap">
                                     <button type="submit" class="btn" style="background:var(--irs-blue);color:white;border-radius:8px;padding:0.65rem 1.5rem;font-weight:600;">
                                         <i class="bi bi-send me-2"></i><?= t('submit_verification') ?>
                                     </button>
@@ -170,6 +186,15 @@ $lang = getLang(); $theme = getTheme();
                                 </div>
                             </div>
                         </form>
+                        <?php else: ?>
+                        <div class="empty-state">
+                            <i class="bi bi-clock" style="color:#ffa500;opacity:1;"></i>
+                            <p style="margin-top:1rem;">Revenez demain pour soumettre de nouveaux documents.</p>
+                            <a href="/dashboard/documents.php" class="btn btn-sm mt-3" style="background:var(--irs-blue);color:white;border-radius:8px;">
+                                <i class="bi bi-folder2-open me-1"></i>Voir mes documents
+                            </a>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

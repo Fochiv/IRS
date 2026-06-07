@@ -1685,3 +1685,95 @@ body {
 .topbar-control:hover {
     border-color: var(--irs-blue) !important;
 }
+
+/* ===== RESPONSIVE AMÉLIORÉ — ADMIN & DASHBOARD ===== */
+
+/* Top-bar : gestion fine sur tablette */
+@media (max-width: 880px) {
+    .top-bar .d-flex.align-items-center.gap-2 {
+        flex-wrap: wrap;
+        gap: 0.4rem !important;
+    }
+    .top-bar .theme-label { display: none; }
+}
+
+/* Top-bar : pleine largeur sur mobile */
+@media (max-width: 640px) {
+    .top-bar {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.75rem !important;
+    }
+    .top-bar > div:last-child,
+    .top-bar > a:last-child {
+        width: 100%;
+    }
+    .top-bar .d-flex.align-items-center.gap-2 {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+
+/* Stat cards: icône réduite sur mobile */
+@media (max-width: 480px) {
+    .stat-card { gap: 0.75rem; padding: 0.85rem; }
+    .stat-card-icon { width: 46px; height: 46px; font-size: 1.2rem; border-radius: 10px; }
+    .stat-card-value { font-size: 1.4rem; }
+    .stat-card-label { font-size: 0.75rem; }
+}
+
+/* Tables : forcer le scroll horizontal partout */
+.irs-card .table-wrap,
+.irs-card > div[style*="overflow"] {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Tables dans admin/dashboard : largeur min pour scroller */
+@media (max-width: 768px) {
+    .irs-table { min-width: 560px !important; }
+}
+@media (max-width: 480px) {
+    .irs-table { min-width: 480px !important; }
+    .irs-table th, .irs-table td { padding: 0.45rem 0.55rem; font-size: 0.76rem; }
+}
+
+/* Sidebar admin: fond sombre correct sur mobile */
+@media (max-width: 992px) {
+    .admin-sidebar { background: #0d1117 !important; }
+}
+
+/* Cartes admin: padding réduit sur tablette */
+@media (max-width: 768px) {
+    .irs-card-body { padding: 1rem; }
+    .irs-card-header { padding: 0.9rem 1rem; }
+}
+
+/* Modal plein écran sur mobile */
+@media (max-width: 576px) {
+    .modal-dialog.modal-lg { max-width: calc(100vw - 1rem); margin: 0.5rem auto; }
+    .modal-body .row .col-md-6 { flex: 0 0 100%; max-width: 100%; }
+    .info-label { min-width: 100px; font-size: 0.8rem; }
+    .info-value { font-size: 0.85rem; }
+}
+
+/* Boutons filtres documents: wrap sur mobile */
+@media (max-width: 480px) {
+    .irs-card-body .d-flex.gap-2.flex-wrap { gap: 0.4rem !important; }
+    .irs-card-body .d-flex.gap-2.flex-wrap .btn { font-size: 0.78rem; padding: 0.3rem 0.6rem; }
+}
+
+/* Col 5 colonnes: ajustement tablette fine */
+@media (max-width: 768px) and (min-width: 577px) {
+    .col-lg-2-4 { flex: 0 0 50%; max-width: 50%; }
+}
+
+/* Dashboard hero-section: taille police mobile */
+@media (max-width: 480px) {
+    .hero-section h1 { font-size: 1.6rem; }
+    .hero-verify-box { padding: 1.25rem; }
+    .btn-verify { padding: 0 1.25rem; font-size: 0.9rem; }
+    .cta-section h2 { font-size: 1.5rem; }
+    .stats-section { padding: 40px 0; }
+    .stat-number { font-size: 1.8rem; }
+}

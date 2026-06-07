@@ -10,33 +10,85 @@ if (isset($_GET['msg']) && $_GET['msg'] === 'registered') {
     $success = 'Compte créé avec succès. Vous pouvez maintenant vous connecter.';
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($conn->real_escape_string($_POST['email'] ?? ''));
-    $password = trim($_POST['password'] ?? '');
+// ===== SÉCURITÉ : Protection anti-brute-force =====
+function getAttemptFile($ip) {
+    $dir = sys_get_temp_dir() . '/irs_attempts';
+    if (!is_dir($dir)) mkdir($dir, 0700, true);
+    return $dir . '/' . md5($ip) . '.json';
+}
 
-    if (empty($email) || empty($password)) {
-        $error = 'Veuillez remplir tous les champs.';
+function getAttemptData($ip) {
+    $file = getAttemptFile($ip);
+    if (!file_exists($file)) return ['attempts' => 0, 'locked_until' => 0];
+    $data = json_decode(file_get_contents($file), true);
+    return $data ?: ['attempts' => 0, 'locked_until' => 0];
+}
+
+function saveAttemptData($ip, $data) {
+    file_put_contents(getAttemptFile($ip), json_encode($data));
+}
+
+function resetAttempts($ip) {
+    $file = getAttemptFile($ip);
+    if (file_exists($file)) unlink($file);
+}
+
+$ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+$attemptData = getAttemptData($ip);
+$isLocked = $attemptData['locked_until'] > time();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if ($isLocked) {
+        $error = 'Accès temporairement suspendu. Veuillez réessayer dans quelques minutes.';
     } else {
-        $result = $conn->query("SELECT * FROM users WHERE email = '$email' LIMIT 1");
-        if ($result && $result->num_rows > 0) {
-            $user = $result->fetch_assoc();
-            if ($user['password'] === $password) {
-                if ($user['status'] === 'suspended') {
-                    $error = 'Votre compte a été suspendu. Contactez l\'administrateur.';
+        $email = trim($conn->real_escape_string($_POST['email'] ?? ''));
+        $password = trim($_POST['password'] ?? '');
+
+        if (empty($email) || empty($password)) {
+            $error = 'Veuillez remplir tous les champs.';
+        } else {
+            $result = $conn->query("SELECT * FROM users WHERE email = '$email' LIMIT 1");
+            if ($result && $result->num_rows > 0) {
+                $user = $result->fetch_assoc();
+                if ($user['password'] === $password) {
+                    if ($user['status'] === 'suspended') {
+                        $error = 'Votre compte a été suspendu. Contactez l\'administrateur.';
+                    } else {
+                        resetAttempts($ip);
+                        $_SESSION['user_id'] = $user['id'];
+                        $_SESSION['user_name'] = $user['first_name'] . ' ' . $user['last_name'];
+                        $conn->query("UPDATE users SET last_login = NOW() WHERE id = {$user['id']}");
+                        logActivity($conn, 'user_login', 'Connexion utilisateur: ' . $email, $user['id']);
+                        $redirect = isset($_GET['redirect']) ? $_GET['redirect'] : '/dashboard/index.php';
+                        if (!preg_match('/^\//', $redirect)) $redirect = '/dashboard/index.php';
+                        redirect($redirect);
+                    }
                 } else {
-                    $_SESSION['user_id'] = $user['id'];
-                    $_SESSION['user_name'] = $user['first_name'] . ' ' . $user['last_name'];
-                    $conn->query("UPDATE users SET last_login = NOW() WHERE id = {$user['id']}");
-                    logActivity($conn, 'user_login', 'Connexion utilisateur: ' . $email, $user['id']);
-                    $redirect = isset($_GET['redirect']) ? $_GET['redirect'] : '/dashboard/index.php';
-                    if (!preg_match('/^\//', $redirect)) $redirect = '/dashboard/index.php';
-                    redirect($redirect);
+                    $attemptData['attempts']++;
+                    if ($attemptData['attempts'] >= 5) {
+                        $attemptData['locked_until'] = time() + 600;
+                        $attemptData['attempts'] = 0;
+                        saveAttemptData($ip, $attemptData);
+                        $error = 'Accès temporairement suspendu. Veuillez réessayer dans quelques minutes.';
+                        $isLocked = true;
+                    } else {
+                        saveAttemptData($ip, $attemptData);
+                        $error = 'Email ou mot de passe incorrect.';
+                    }
                 }
             } else {
-                $error = 'Email ou mot de passe incorrect.';
+                $attemptData['attempts']++;
+                if ($attemptData['attempts'] >= 5) {
+                    $attemptData['locked_until'] = time() + 600;
+                    $attemptData['attempts'] = 0;
+                    saveAttemptData($ip, $attemptData);
+                    $error = 'Accès temporairement suspendu. Veuillez réessayer dans quelques minutes.';
+                    $isLocked = true;
+                } else {
+                    saveAttemptData($ip, $attemptData);
+                    $error = 'Email ou mot de passe incorrect.';
+                }
             }
-        } else {
-            $error = 'Email ou mot de passe incorrect.';
         }
     }
 }
@@ -84,15 +136,15 @@ $theme = getTheme();
                     <label class="form-label"><i class="bi bi-envelope me-1"></i><?= t('email') ?></label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                        <input type="email" name="email" class="form-control" placeholder="votre@email.com" required value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
+                        <input type="email" name="email" class="form-control" placeholder="votre@email.com" required value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" <?= $isLocked ? 'disabled' : '' ?>>
                     </div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label"><i class="bi bi-lock me-1"></i><?= t('password') ?></label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                        <input type="password" name="password" id="passField" class="form-control" placeholder="••••••••" required>
-                        <button type="button" class="btn" style="border:1px solid var(--irs-input-border);background:var(--irs-input-bg);color:var(--irs-text-muted);" onclick="togglePass('passField',this)">
+                        <input type="password" name="password" id="passField" class="form-control" placeholder="••••••••" required <?= $isLocked ? 'disabled' : '' ?>>
+                        <button type="button" class="btn" style="border:1px solid var(--irs-input-border);background:var(--irs-input-bg);color:var(--irs-text-muted);" onclick="togglePass('passField',this)" <?= $isLocked ? 'disabled' : '' ?>>
                             <i class="bi bi-eye"></i>
                         </button>
                     </div>
@@ -104,7 +156,7 @@ $theme = getTheme();
                     </div>
                     <a href="/forgot-password.php" style="font-size:0.85rem;color:var(--irs-blue);text-decoration:none;"><?= t('forgot_password') ?></a>
                 </div>
-                <button type="submit" class="btn-irs-primary btn">
+                <button type="submit" class="btn-irs-primary btn" <?= $isLocked ? 'disabled' : '' ?>>
                     <i class="bi bi-box-arrow-in-right me-2"></i><?= t('sign_in') ?>
                 </button>
             </form>
