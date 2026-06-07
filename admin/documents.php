@@ -32,20 +32,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_document'])) {
             $error = 'Ce numéro de document existe déjà.';
         } else {
             $file_path = '';
-            if (!empty($_FILES['doc_file']['name'])) {
+            if (!empty($_FILES['doc_file']['name']) && $_FILES['doc_file']['error'] === UPLOAD_ERR_OK) {
                 $ext = strtolower(pathinfo($_FILES['doc_file']['name'], PATHINFO_EXTENSION));
-                if (in_array($ext, ['pdf','jpg','jpeg','png'])) {
-                    $fname = uniqid().'_'.time().'.'.$ext;
-                    $dest = __DIR__ . '/../uploads/documents/' . $fname;
+                if (in_array($ext, ['pdf','jpg','jpeg','png','webp'])) {
+                    $uploadDir = __DIR__ . '/../uploads/documents/';
+                    if (!is_dir($uploadDir)) {
+                        mkdir($uploadDir, 0775, true);
+                    }
+                    $fname = uniqid('doc_', true) . '.' . $ext;
+                    $dest = $uploadDir . $fname;
                     if (move_uploaded_file($_FILES['doc_file']['tmp_name'], $dest)) {
                         $file_path = 'uploads/documents/' . $fname;
+                    } else {
+                        $error = 'Erreur lors de la sauvegarde du fichier. Vérifiez les permissions du dossier uploads/.';
                     }
+                } else {
+                    $error = 'Format de fichier non supporté. Utilisez PDF, JPG, JPEG, PNG ou WEBP.';
                 }
+            } elseif (!empty($_FILES['doc_file']['name']) && $_FILES['doc_file']['error'] !== UPLOAD_ERR_NO_FILE) {
+                $uploadErrors = [
+                    UPLOAD_ERR_INI_SIZE   => 'Fichier trop volumineux (limite serveur).',
+                    UPLOAD_ERR_FORM_SIZE  => 'Fichier trop volumineux (limite formulaire).',
+                    UPLOAD_ERR_PARTIAL    => 'Fichier partiellement uploadé. Réessayez.',
+                    UPLOAD_ERR_NO_TMP_DIR => 'Dossier temporaire manquant.',
+                    UPLOAD_ERR_CANT_WRITE => 'Impossible d\'écrire le fichier.',
+                ];
+                $errCode = $_FILES['doc_file']['error'];
+                $error = $uploadErrors[$errCode] ?? "Erreur d'upload (code: $errCode).";
             }
-            $fp = $conn->real_escape_string($file_path);
-            $conn->query("INSERT INTO documents (document_number,holder_name,document_type,issuing_organization,issue_date,country_of_origin,description,status,file_path,added_by) VALUES ('$dn','$hn','$dt','$io','$id_date','$co','$desc','$st','$fp',$aid)");
-            $success = 'Document officiel ajouté.';
-            logActivity($conn, 'admin_add_doc', "Ajout document: $dn", null, $aid);
+
+            if (!$error) {
+                $fp = $conn->real_escape_string($file_path);
+                $conn->query("INSERT INTO documents (document_number,holder_name,document_type,issuing_organization,issue_date,country_of_origin,description,status,file_path,added_by) VALUES ('$dn','$hn','$dt','$io','$id_date','$co','$desc','$st','$fp',$aid)");
+                $success = 'Document officiel ajouté' . ($file_path ? ' avec fichier joint.' : ' (sans fichier).');
+                logActivity($conn, 'admin_add_doc', "Ajout document: $dn", null, $aid);
+            }
         }
     } else {
         $error = 'Champs obligatoires manquants.';

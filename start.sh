@@ -70,4 +70,9 @@ echo "User  : jean.dupont@email.com / User@1234"
 echo ""
 
 # Démarrer le serveur PHP built-in sur le port 5000
-php -S 0.0.0.0:5000 -t . router.php
+php \
+  -d upload_max_filesize=50M \
+  -d post_max_size=100M \
+  -d memory_limit=256M \
+  -d max_execution_time=120 \
+  -S 0.0.0.0:5000 -t . router.php
