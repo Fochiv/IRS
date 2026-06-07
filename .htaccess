@@ -4,9 +4,16 @@ DirectoryIndex index.php
 # Security headers
 <IfModule mod_headers.c>
     Header always set X-Content-Type-Options nosniff
-    Header always set X-Frame-Options SAMEORIGIN
     Header always set X-XSS-Protection "1; mode=block"
 </IfModule>
+
+# Allow PDF/images to be displayed inline (needed for document previews)
+<FilesMatch "\.(pdf|jpg|jpeg|png|gif|webp)$">
+    <IfModule mod_headers.c>
+        Header set Content-Disposition "inline"
+        Header set X-Frame-Options "SAMEORIGIN"
+    </IfModule>
+</FilesMatch>
 
 # Protect sensitive files
 <FilesMatch "\.(sql|log|env|ini|conf)$">

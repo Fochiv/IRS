@@ -170,7 +170,20 @@ $lang = getLang(); $theme = getTheme();
                                                     <?php elseif ($docFile && $isPDF): ?>
                                                     <div class="doc-file-preview mb-3">
                                                         <div class="doc-preview-label"><i class="bi bi-file-pdf me-1"></i>Aperçu du document officiel (PDF)</div>
-                                                        <iframe src="/<?= htmlspecialchars($docFile) ?>" class="doc-preview-pdf" title="Document officiel PDF"></iframe>
+                                                        <object data="/<?= htmlspecialchars($docFile) ?>#toolbar=1&view=FitH" type="application/pdf" class="doc-preview-pdf" style="width:100%;min-height:400px;border-radius:8px;">
+                                                            <div style="padding:1.5rem;text-align:center;background:#f8f9fa;border-radius:8px;">
+                                                                <i class="bi bi-file-pdf" style="font-size:2.5rem;color:#dc3545;display:block;margin-bottom:0.75rem;"></i>
+                                                                <p style="margin-bottom:1rem;color:#555;font-size:0.9rem;">L'aperçu PDF n'est pas disponible dans ce navigateur.</p>
+                                                                <a href="/<?= htmlspecialchars($docFile) ?>" target="_blank" class="btn btn-sm btn-outline-danger">
+                                                                    <i class="bi bi-box-arrow-up-right me-1"></i>Ouvrir le PDF dans un nouvel onglet
+                                                                </a>
+                                                            </div>
+                                                        </object>
+                                                        <div class="mt-2 text-center">
+                                                            <a href="/<?= htmlspecialchars($docFile) ?>" target="_blank" class="btn btn-sm btn-outline-danger">
+                                                                <i class="bi bi-box-arrow-up-right me-1"></i>Ouvrir dans un nouvel onglet
+                                                            </a>
+                                                        </div>
                                                     </div>
                                                     <?php else: ?>
                                                     <div style="text-align:center;padding:1.5rem 1rem;color:var(--irs-text-muted);font-size:0.88rem;margin-bottom:0.75rem;">
